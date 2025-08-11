@@ -35,6 +35,6 @@ public class Document {
     private String pathFile;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "studant_id", nullable = false)
-    private Student studant;
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 }

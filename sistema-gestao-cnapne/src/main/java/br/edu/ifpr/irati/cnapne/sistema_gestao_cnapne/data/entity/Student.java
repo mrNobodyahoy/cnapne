@@ -18,7 +18,7 @@ public class Student extends User {
 
     @NotBlank(message = "O nome completo é obrigatório")
     @Column(nullable = false)
-    private String fullName;
+    private String completeName;
 
     @NotBlank(message = "A matrícula é obrigatória")
     @Column(unique = true, nullable = false)

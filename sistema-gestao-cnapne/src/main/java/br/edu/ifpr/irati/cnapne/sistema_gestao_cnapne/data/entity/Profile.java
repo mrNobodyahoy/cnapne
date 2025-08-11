@@ -26,11 +26,11 @@ public class Profile implements GrantedAuthority{
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String authorityName;
+    private String name;
 
     @Override
     public String getAuthority(){
-        return this.authorityName;
+        return this.name;
     }
     
 }
