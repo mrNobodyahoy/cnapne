@@ -8,6 +8,8 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
+    Optional<Student> findByLogin(String login);
+
     Optional<Student> findByRegistration(String registration);
 
     List<Student> findByCompleteNameContainingIgnoreCase(String completeName);
