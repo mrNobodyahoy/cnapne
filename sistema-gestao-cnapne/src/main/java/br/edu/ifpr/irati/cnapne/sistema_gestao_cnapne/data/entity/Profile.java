@@ -2,8 +2,11 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,18 +22,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "profile")
-public class Profile implements GrantedAuthority{
+public class Profile implements GrantedAuthority {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private String name;
+    private Role name;
 
     @Override
-    public String getAuthority(){
-        return this.name;
+    public String getAuthority() {
+        return this.name.name();
     }
-    
+
 }

@@ -1,4 +1,4 @@
-package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.repository;
+package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository;
 
 import java.util.List;
 import java.util.Optional;
