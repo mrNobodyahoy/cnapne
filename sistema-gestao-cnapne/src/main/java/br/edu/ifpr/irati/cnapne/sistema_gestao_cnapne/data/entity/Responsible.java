@@ -17,6 +17,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @NoArgsConstructor
@@ -48,5 +49,6 @@ public class Responsible {
     @NotNull(message = "O estudante é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @ToString.Exclude
     private Student student;
 }

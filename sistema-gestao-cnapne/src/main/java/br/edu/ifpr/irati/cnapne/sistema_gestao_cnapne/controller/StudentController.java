@@ -19,7 +19,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.ApiErrorDTO;
 
 @RestController
 @RequestMapping("/api/v1/students")
-@Tag(name = "Estudantes", description = "Endpoints para o gerenciamento de estudantes") // Tag para agrupar endpoints na UI do Swagger
+@Tag(name = "Estudantes", description = "Endpoints para o gerenciamento de estudantes") // Tag para agrupar endpoints 
 public class StudentController {
 
     private final StudentService studentService;
@@ -55,7 +55,7 @@ public class StudentController {
         // 1. Chama o serviço para executar a lógica de negócio
         ReadStudentDTO createdStudent = studentService.createStudent(dto);
         
-        // 2. Retorna a resposta HTTP com status 201 (Created) e o DTO do estudante criado
+        // 2. Retorna a resposta HTTP com status 201 e o DTO do estudante criado
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStudent);
     }
 

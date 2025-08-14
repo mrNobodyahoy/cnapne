@@ -15,7 +15,6 @@
 
     /**
      * Esta classe é executada na inicialização da aplicação para popular o banco de dados
-     * com dados essenciais, como os perfis de usuário e um administrador padrão.
      */
     @Component
     public class DataSeeder implements CommandLineRunner {
@@ -29,7 +28,6 @@
 
         @Override
         public void run(String... args) throws Exception {
-            // 1. Criar os Perfis (Roles) se eles não existirem
             Arrays.stream(Role.values()).forEach(roleEnum -> {
                 if (profileRepository.findByName(roleEnum).isEmpty()) {
                     Profile profile = new Profile();
@@ -39,15 +37,13 @@
                 }
             });
 
-            // 2. Criar um usuário Coordenador padrão se ele não existir
             if (userRepository.findByLogin("coordenador").isEmpty()) {
-                // Busca o perfil de coordenação que garantimos que existe no passo anterior
                 Profile coordProfile = profileRepository.findByName(Role.COORDENACAO_CNAPNE)
                     .orElseThrow(() -> new RuntimeException("Perfil COORDENACAO_CNAPNE não foi encontrado no banco."));
 
                 User adminUser = new User();
                 adminUser.setLogin("coordenador");
-                adminUser.setPassword(passwordEncoder.encode("admin123")); // Senha padrão para desenvolvimento
+                adminUser.setPassword(passwordEncoder.encode("admin123")); 
                 adminUser.setProfile(coordProfile);
                 adminUser.setActive(true);
                 userRepository.save(adminUser);
