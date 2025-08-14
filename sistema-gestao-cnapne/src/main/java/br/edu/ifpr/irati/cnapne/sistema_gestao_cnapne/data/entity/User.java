@@ -2,6 +2,7 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,8 +36,8 @@ import lombok.Setter;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    private UUID id;
 
     @NotBlank(message = "A login é obrigatório")
     @Size(min = 3, max = 50, message = "O login deve ter entre 3 e 50 caracteres")

@@ -1,13 +1,15 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student;
 
 import java.util.Date;
+import java.util.UUID;
+
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 
 
 // DTO para exibir os dados de um estudante.
 
 public record ReadStudentDTO(
-    Long id,              
+    UUID id,              
     String registration,    
     String completeName,
     String team,

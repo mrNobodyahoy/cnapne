@@ -1,5 +1,7 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity;
 
+import java.util.UUID;
+
 import org.springframework.security.core.GrantedAuthority;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
@@ -25,8 +27,8 @@ import lombok.NoArgsConstructor;
 public class Profile implements GrantedAuthority {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    private UUID id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
