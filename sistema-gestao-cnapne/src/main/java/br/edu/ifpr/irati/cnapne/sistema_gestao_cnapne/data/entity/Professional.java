@@ -30,4 +30,5 @@ public class Professional extends User {
 
     @NotBlank
     private String specialty;
+    
 }

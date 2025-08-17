@@ -13,49 +13,44 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 public class StudentService {
 
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ProfileRepository profileRepository; // <-- ADICIONADO
+    private final ProfileRepository profileRepository;
 
-    // Injeção de dependências via construtor (melhor prática)
-    public StudentService(StudentRepository studentRepository, PasswordEncoder passwordEncoder, ProfileRepository profileRepository) {
+    public StudentService(StudentRepository studentRepository,
+            PasswordEncoder passwordEncoder,
+            ProfileRepository profileRepository) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
-        this.profileRepository = profileRepository; // <-- ADICIONADO
+        this.profileRepository = profileRepository;
     }
 
-    /**
-     * Cria um novo estudante no sistema, validando dados únicos como login e matrícula.
-     * (Baseado no Requisito Funcional: RF02) [cite_start][cite: 486, 628]
-     * @param dto DTO com os dados para a criação do estudante.
-     * @return DTO com os dados do estudante recém-criado, incluindo seu ID.
-     */
     @Transactional
     public ReadStudentDTO createStudent(@Valid CreateStudentDTO dto) {
-        // 1. Validação de duplicidade
-        // O sistema deve verificar se já existe um estudante com a mesma matrícula [cite: 645]
-        if (studentRepository.findByRegistration(dto.registration()).isPresent()) {
-            throw new DataIntegrityViolationException("A matrícula '" + dto.registration() + "' já está cadastrada.");
-        }
-        // Embora não esteja explícito para login de estudante no RF02, é uma boa prática
-        if (studentRepository.findByLogin(dto.login()).isPresent()) {
-            throw new DataIntegrityViolationException("O login '" + dto.login() + "' já está em uso.");
-        }
+        studentRepository.findByRegistration(dto.registration()).ifPresent(s -> {
+            throw new DataIntegrityViolationException(
+                    "A matrícula '" + dto.registration() + "' já está cadastrada.");
+        });
 
-        // 2. Busca o perfil de ESTUDANTE no banco de dados
+        studentRepository.findByLogin(dto.login()).ifPresent(s -> {
+            throw new DataIntegrityViolationException(
+                    "O login '" + dto.login() + "' já está em uso.");
+        });
+
         Profile studentProfile = profileRepository.findByName(Role.ESTUDANTE)
-            .orElseThrow(() -> new RuntimeException("Perfil ESTUDANTE não encontrado. Verifique se o DataSeeder foi executado."));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Perfil ESTUDANTE não encontrado. Verifique se o DataSeeder foi executado."));
 
-        // 3. Criação da nova entidade
         Student student = new Student();
-
-        // 4. Mapeamento dos dados do DTO para a Entidade
         student.setLogin(dto.login());
-        student.setPassword(passwordEncoder.encode(dto.password())); // Sempre codificar a senha!
-        student.setProfile(studentProfile); // <-- ADICIONADO: Associa o perfil ao estudante
+        student.setPassword(passwordEncoder.encode(dto.password())); 
+        student.setProfile(studentProfile);
         student.setCompleteName(dto.completeName());
         student.setRegistration(dto.registration());
         student.setTeam(dto.team());
@@ -64,15 +59,68 @@ public class StudentService {
         student.setEmail(dto.email());
         student.setGender(dto.gender());
         student.setEthnicity(dto.ethnicity());
-        
-        // 5. Definição de valores padrão (regra de negócio)
+
         student.setStatus("ATIVO");
         student.setActive(true);
 
-        // 6. Persistência no banco de dados
         Student savedStudent = studentRepository.save(student);
 
-        // 7. Retorno de um DTO com os dados do objeto salvo
         return new ReadStudentDTO(savedStudent);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadStudentDTO> getAllStudents() {
+        return studentRepository.findAll()
+                .stream()
+                .map(ReadStudentDTO::new)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ReadStudentDTO getStudentById(UUID id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
+        return new ReadStudentDTO(student);
+    }
+
+    @Transactional
+    public ReadStudentDTO updateStudent(UUID id, @Valid CreateStudentDTO dto) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
+
+        studentRepository.findByRegistration(dto.registration())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw new DataIntegrityViolationException(
+                            "A matrícula '" + dto.registration() + "' já está em uso.");
+                });
+
+        studentRepository.findByLogin(dto.login())
+                .filter(s -> !s.getId().equals(id))
+                .ifPresent(s -> {
+                    throw new DataIntegrityViolationException("O login '" + dto.login() + "' já está em uso.");
+                });
+
+        student.setLogin(dto.login());
+        student.setPassword(passwordEncoder.encode(dto.password()));
+        student.setCompleteName(dto.completeName());
+        student.setRegistration(dto.registration());
+        student.setTeam(dto.team());
+        student.setBirthDate(dto.birthDate());
+        student.setPhone(dto.phone());
+        student.setEmail(dto.email());
+        student.setGender(dto.gender());
+        student.setEthnicity(dto.ethnicity());
+
+        Student updated = studentRepository.save(student);
+
+        return new ReadStudentDTO(updated);
+    }
+
+    @Transactional
+    public void deleteStudent(UUID id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
+        studentRepository.delete(student);
     }
 }

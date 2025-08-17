@@ -15,10 +15,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +29,7 @@ import lombok.NoArgsConstructor;
 public class Profile implements GrantedAuthority {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) 
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Enumerated(EnumType.STRING)
@@ -36,7 +38,7 @@ public class Profile implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return this.name.name();
+        return "ROLE_" + this.name.name();
     }
 
 }

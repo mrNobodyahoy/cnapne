@@ -10,4 +10,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 public interface ProfessionalRepository extends JpaRepository<Professional, UUID> {
     
     Optional<Professional> findByEmail(String email);
+
+
+
 }

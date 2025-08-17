@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * DTO para receber as credenciais de autenticação (login e senha).
  * Segue o padrão solicitado, adaptado para usar 'login'.
- *
- * @param login O nome de usuário para autenticação.
- * @param password A senha do usuário.
  */
 public record AuthRequestDTO(
     @NotBlank(message = "O campo 'login' não pode ser vazio.")

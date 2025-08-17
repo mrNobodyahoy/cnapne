@@ -18,7 +18,7 @@ import java.io.IOException;
 /**
  * Filtro de segurança para validar o token JWT.
  */
-@Component //  componente gerenciado pelo Spring
+@Component
 public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -37,10 +37,8 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
         var subject = jwtService.validateToken(tokenJWT);
         
         if (subject != null && !subject.isEmpty()) {
-            // Busca o usuário no banco
             UserDetails user = userRepository.findByLogin(subject).orElse(null);
 
-            //verifica se o user existe
             if (user != null) {
                 var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -57,7 +55,7 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
     private String recoverToken(HttpServletRequest request) {
         var authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            // Remove o prefixo "Bearer " para obter apenas o token
+            // obter apenas o token
             return authorizationHeader.substring(7);
         }
         return null;

@@ -13,8 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 /**
- * Serviço responsável por gerar e validar tokens JWT.
- * Baseado no padrão solicitado.
+ * gerar e validar tokens JWT.
  */
 @Service
 public class JwtService {
@@ -23,11 +22,6 @@ public class JwtService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    /**
-     * Gera um novo token JWT para o usuário autenticado.
-     * @param user O usuário para o qual o token será gerado.
-     * @return Uma String contendo o token JWT.
-     */
     public String generateToken(User user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
@@ -50,7 +44,7 @@ public class JwtService {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
-                    .withIssuer("CNAPNE API") // Verifica se o emissor é o mesmo
+                    .withIssuer("CNAPNE API")
                     .build()
                     .verify(tokenJWT) // Valida o token
                     .getSubject(); // Extrai o subject (login)

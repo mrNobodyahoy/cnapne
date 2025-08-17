@@ -10,18 +10,17 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 /**
- * Serviço responsável por orquestrar a lógica de autenticação de usuários.
+ * autenticação de usuários.
  */
 @Service
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService; // <-- CORREÇÃO: Usar JwtService
+    private final JwtService jwtService; 
 
-    // Injeção de dependências via construtor
-    public AuthService(AuthenticationManager authenticationManager, JwtService jwtService) { // <-- CORREÇÃO: Usar JwtService
+    public AuthService(AuthenticationManager authenticationManager, JwtService jwtService) { 
         this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService; // <-- CORREÇÃO: Usar JwtService
+        this.jwtService = jwtService;
     }
 
     public AuthResponseDTO authenticate(AuthRequestDTO authRequest) {
@@ -40,18 +39,14 @@ public class AuthService {
                 throw new AuthenticationException("Este usuário está desativado no sistema.") {};
             }
 
-            // 5. Gera o token JWT
-            String token = jwtService.generateToken(user); // <-- CORREÇÃO: Usar jwtService
+            String token = jwtService.generateToken(user); 
             Role role = user.getProfile().getName();
 
-            // 6. Retorna a resposta com o token e a role
             return new AuthResponseDTO(token, role);
 
         } catch (BadCredentialsException e) {
-            // Captura o erro específico de credenciais erradas para uma mensagem clara
             throw new BadCredentialsException("Login ou senha inválidos.");
         } catch (AuthenticationException e) {
-            // Captura outras exceções de autenticação (como a de usuário inativo)
             throw e;
         }
     }
