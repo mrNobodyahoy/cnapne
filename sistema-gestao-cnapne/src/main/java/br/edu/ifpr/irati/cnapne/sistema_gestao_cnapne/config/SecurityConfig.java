@@ -27,20 +27,32 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Login
                         .requestMatchers("/api/v1/auth/login").permitAll()
+
                         // Estudantes
-                        .requestMatchers(HttpMethod.POST, "/api/v1/students").hasAuthority("COORDENACAO_CNAPNE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/students").hasAuthority("ROLE_COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/**").permitAll()
+
                         // Profissionais
-                        .requestMatchers(HttpMethod.POST, "/api/v1/professionals").hasAuthority("COORDENACAO_CNAPNE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/professionals")
+                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**")
-                        .hasAnyAuthority("COORDENACAO_CNAPNE", "EQUIPE_MULTIDISCIPLINAR")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**").hasAuthority("COORDENACAO_CNAPNE")
+                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**")
+                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**")
-                        .hasAuthority("COORDENACAO_CNAPNE")
-                        // Outros endpoints
+                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
+
+                        // Documentos
+                        .requestMatchers(HttpMethod.POST, "/api/v1/students/*/documents")
+                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/students/*/documents/**")
+                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR", "ROLE_ESTUDANTE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/students/*/documents/**")
+                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
+
                         .anyRequest().authenticated())
-                // filtro segurança
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

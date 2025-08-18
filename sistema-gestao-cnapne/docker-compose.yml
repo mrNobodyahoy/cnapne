@@ -1,27 +1,27 @@
-
 services:
-  # 1. Serviço da Aplicação Java
   app:
-    build: . # Constrói a imagem a partir do Dockerfile na pasta atual
+    build: .
     container_name: cnapne_app
     ports:
-      - "8080:8080" # Mapeia a porta da sua máquina para a do contêiner
+      - "8080:8080"
     env_file:
-      - .env # Carrega as variáveis do arquivo .env
+      - .env
     environment:
-      # Passa as variáveis para a aplicação Spring Boot
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_MAIL_HOST: mailhog # Aponta para o serviço de e-mail
+      SPRING_MAIL_HOST: mailhog
       SPRING_MAIL_PORT: 1025
+
+    volumes:
+      - ./uploads:/app/uploads
+
     depends_on:
       db:
-        condition: service_healthy # Só inicia o app depois que o banco estiver saudável
+        condition: service_healthy
     networks:
       - cnapne_network
 
-  # 2. Serviço do Banco de Dados PostgreSQL
   db:
     image: postgres:15
     container_name: cnapne_db

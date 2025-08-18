@@ -2,6 +2,7 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.controller;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.StudentService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +43,7 @@ public class StudentController {
     public ResponseEntity<ReadStudentDTO> createStudent(@Valid @RequestBody CreateStudentDTO dto) {
         ReadStudentDTO createdStudent = studentService.createStudent(dto);
 
-        //Retorna a resposta HTTP com status 201 e o DTO do estudante
+        // Retorna a resposta 201 e o DTO do estudante
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStudent);
     }
 
@@ -68,6 +69,16 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build(); // 204
+    }
+
+    @GetMapping("/search/by-name")
+    public ResponseEntity<List<ReadStudentSummaryDTO>> searchByName(@RequestParam String name) {
+        return ResponseEntity.ok(studentService.searchByName(name));
+    }
+
+    @GetMapping("/search/by-registration")
+    public ResponseEntity<List<ReadStudentSummaryDTO>> searchByRegistration(@RequestParam String registration) {
+        return ResponseEntity.ok(studentService.searchByRegistration(registration));
     }
 
 }

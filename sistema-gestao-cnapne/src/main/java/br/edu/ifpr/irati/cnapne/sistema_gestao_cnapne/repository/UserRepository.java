@@ -9,7 +9,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    Optional<User> findByLogin(String login);
+    Optional<User> findByEmail(String email);
 
 
 }

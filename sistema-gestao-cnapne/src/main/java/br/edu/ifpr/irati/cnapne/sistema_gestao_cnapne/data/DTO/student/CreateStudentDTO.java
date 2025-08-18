@@ -5,9 +5,9 @@ import java.util.Date;
 
 public record CreateStudentDTO(
 
-    @NotBlank(message = "O login é obrigatório.")
-    @Size(min = 3, max = 50, message = "O login deve ter entre 3 e 50 caracteres.")
-    String login,
+    @NotBlank(message = "O e-mail é obrigatório.")
+    @Email(message = "O formato do e-mail é inválido.")
+    String email,
 
     @NotBlank(message = "A senha é obrigatória.")
     @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres.")
@@ -31,10 +31,6 @@ public record CreateStudentDTO(
 
     @NotBlank(message = "O telefone é obrigatório.")
     String phone,
-
-    @NotBlank(message = "O e-mail é obrigatório.")
-    @Email(message = "O formato do e-mail é inválido.")
-    String email,
 
     @NotBlank(message = "O gênero é obrigatório.")
     String gender,

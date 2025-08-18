@@ -38,11 +38,6 @@ public class Student extends User {
     @Column(nullable = false)
     private String phone;
 
-    @Email(message = "O formato do e-mail é inválido")
-    @NotBlank(message = "O e-mail é obrigatório")
-    @Column(nullable = false)
-    private String email;
-
     @NotBlank
     @Column(nullable = false)
     private String gender;

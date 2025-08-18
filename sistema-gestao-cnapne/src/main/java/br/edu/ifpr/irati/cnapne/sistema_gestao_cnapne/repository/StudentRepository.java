@@ -10,12 +10,12 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 
 public interface StudentRepository extends JpaRepository<Student, UUID> {
 
-    Optional<Student> findByLogin(String login);
-
     Optional<Student> findByRegistration(String registration);
 
     List<Student> findByCompleteNameContainingIgnoreCase(String completeName);
 
     List<Student> findByTeam(String team);
+
+    List<Student> findByRegistrationContainingIgnoreCase(String registration);
 
 }

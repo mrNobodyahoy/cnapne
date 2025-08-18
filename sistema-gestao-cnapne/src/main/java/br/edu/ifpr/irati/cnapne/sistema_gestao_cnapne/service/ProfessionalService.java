@@ -39,12 +39,7 @@ public class ProfessionalService {
 
     @Transactional
     public ReadProfessionalDTO createProfessional(CreateProfessionalDTO dto) {
-
-        if (userRepository.findByLogin(dto.login()).isPresent()) {
-            throw new DataIntegrityViolationException("O login já está em uso.");
-        }
-
-        if (professionalRepository.findByEmail(dto.email()).isPresent()) {
+        if (userRepository.findByEmail(dto.email()).isPresent()) {
             throw new DataIntegrityViolationException("O e-mail já está em uso.");
         }
 
@@ -52,21 +47,19 @@ public class ProfessionalService {
                 .orElseThrow(() -> new RuntimeException("Perfil " + dto.role() + " não encontrado."));
 
         Professional professional = new Professional();
-        professional.setLogin(dto.login());
+        professional.setEmail(dto.email());
         professional.setPassword(passwordEncoder.encode(dto.password()));
         professional.setActive(true);
         professional.setProfile(profile);
         professional.setFullName(dto.fullName());
-        professional.setEmail(dto.email());
         professional.setSpecialty(dto.specialty());
 
         Professional saved = professionalRepository.save(professional);
-
         return new ReadProfessionalDTO(saved);
     }
 
     @Transactional(readOnly = true)
-    public List<ReadProfessionalDTO> getAllStudents() {
+    public List<ReadProfessionalDTO> getAllProfessionals() {
         return professionalRepository.findAll()
                 .stream()
                 .map(ReadProfessionalDTO::new)
@@ -82,28 +75,27 @@ public class ProfessionalService {
 
     @Transactional
     public ReadProfessionalDTO updateProfessional(UUID id, @Valid CreateProfessionalDTO dto) {
-
         Professional professional = professionalRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Profissional não encontrado com ID: " + id));
 
-        if (!professional.getEmail().equals(dto.email())) {
-            if (professionalRepository.findByEmail(dto.email()).isPresent()) {
-                throw new DataIntegrityViolationException("O e-mail informado já está em uso.");
-            }
-        }
+        userRepository.findByEmail(dto.email())
+                .filter(user -> !user.getId().equals(id))
+                .ifPresent(user -> {
+                    throw new DataIntegrityViolationException("O e-mail informado já está em uso.");
+                });
+
         Profile profile = profileRepository.findByName(Role.valueOf(dto.role()))
                 .orElseThrow(() -> new DataNotFoundException("Perfil '" + dto.role() + "' não encontrado."));
 
-        professional.setLogin(dto.login());
-        professional.setPassword(passwordEncoder.encode(dto.password()));
-        professional.setActive(true);
-        professional.setProfile(profile);
-        professional.setFullName(dto.fullName());
         professional.setEmail(dto.email());
+        if (dto.password() != null && !dto.password().isEmpty()) { 
+            professional.setPassword(passwordEncoder.encode(dto.password()));
+        }
+        professional.setFullName(dto.fullName());
         professional.setSpecialty(dto.specialty());
+        professional.setProfile(profile);
 
         Professional updatedProfessional = professionalRepository.save(professional);
-
         return new ReadProfessionalDTO(updatedProfessional);
     }
 

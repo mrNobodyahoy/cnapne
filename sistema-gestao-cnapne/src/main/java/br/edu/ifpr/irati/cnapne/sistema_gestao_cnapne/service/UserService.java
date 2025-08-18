@@ -22,7 +22,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User createUser(String login, String rawPassword, Role role) {
+    public User createUser(String email, String rawPassword, Role role) {
         Profile profile = profileRepository.findByName(role)
                 .orElseGet(() -> {
                     Profile newProfile = new Profile();
@@ -31,7 +31,7 @@ public class UserService {
                 });
 
         User user = new User();
-        user.setLogin(login);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setActive(true);
         user.setProfile(profile);

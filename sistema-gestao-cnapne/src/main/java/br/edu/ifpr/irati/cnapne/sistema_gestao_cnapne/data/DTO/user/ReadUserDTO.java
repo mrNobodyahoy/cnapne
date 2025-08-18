@@ -4,7 +4,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 
 public record ReadUserDTO(
-        String login,
+        String email,
 
         String password,
 
@@ -16,7 +16,7 @@ public record ReadUserDTO(
 
     public ReadUserDTO(User user) {
         this(
-                user.getLogin(),
+                user.getEmail(),
                 user.getPassword(),
                 user.isActive(),
                 user.getProfile().getName());

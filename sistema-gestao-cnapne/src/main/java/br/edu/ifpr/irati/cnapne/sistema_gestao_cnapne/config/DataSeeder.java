@@ -14,7 +14,7 @@
     import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 
     /**
-     * Esta classe é executada na inicialização da aplicação para popular o banco de dados
+     * Popular o banco de dados
      */
     @Component
     public class DataSeeder implements CommandLineRunner {
@@ -37,12 +37,12 @@
                 }
             });
 
-            if (userRepository.findByLogin("coordenador").isEmpty()) {
+            if (userRepository.findByEmail("coordenador@gmail.com").isEmpty()) {
                 Profile coordProfile = profileRepository.findByName(Role.COORDENACAO_CNAPNE)
                     .orElseThrow(() -> new RuntimeException("Perfil COORDENACAO_CNAPNE não foi encontrado no banco."));
 
                 User adminUser = new User();
-                adminUser.setLogin("coordenador");
+                adminUser.setEmail("coordenador@gmail.com");
                 adminUser.setPassword(passwordEncoder.encode("admin123")); 
                 adminUser.setProfile(coordProfile);
                 adminUser.setActive(true);

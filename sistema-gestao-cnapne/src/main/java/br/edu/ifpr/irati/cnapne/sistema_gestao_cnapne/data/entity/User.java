@@ -18,9 +18,9 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,11 +38,11 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) 
     private UUID id;
-
-    @NotBlank(message = "A login é obrigatório")
-    @Size(min = 3, max = 50, message = "O login deve ter entre 3 e 50 caracteres")
+    
+    @Email(message = "O formato do e-mail é inválido")
+    @NotBlank
     @Column(unique = true, nullable = false)
-    private String login;
+    private String email;
 
     @NotBlank(message = "A senha é obrigatória")
     @Column(nullable = false)
@@ -67,9 +67,8 @@ public class User implements UserDetails {
         return this.password;
     }
 
-    @Override
-    public String getUsername() {
-        return this.login;
+    public String getEmail() {
+        return this.email;
     }
 
     @Override
@@ -90,5 +89,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.active;
+    }
+
+    @Override
+    public String getUsername() {
+    return this.email; 
     }
 }

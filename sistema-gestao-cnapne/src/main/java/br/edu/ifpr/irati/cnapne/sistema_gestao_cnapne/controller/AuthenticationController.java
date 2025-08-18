@@ -23,14 +23,13 @@ public class AuthenticationController {
 
     private final AuthService authService;
 
-    // Injeção de dependência via construtor
     public AuthenticationController(AuthService authService) {
         this.authService = authService;
     }
 
     @Operation(
         summary = "Autentica um usuário e retorna um token JWT",
-        description = "Este endpoint realiza a autenticação do usuário com base no login e senha, conforme o Requisito Funcional RF49.",
+        description = "Este endpoint realiza a autenticação do usuário com base no login e senha.",
         responses = {
             @ApiResponse(
                 responseCode = "200",

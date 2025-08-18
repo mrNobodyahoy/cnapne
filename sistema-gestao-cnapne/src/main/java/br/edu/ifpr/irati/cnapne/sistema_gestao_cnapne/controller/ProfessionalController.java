@@ -50,7 +50,7 @@ public class ProfessionalController {
 
     @GetMapping
     public ResponseEntity<List<ReadProfessionalDTO>> getAllProfessionals() {
-        return ResponseEntity.ok(professionalService.getAllStudents()); // método já retorna List<ReadProfessionalDTO>
+        return ResponseEntity.ok(professionalService.getAllProfessionals()); // método já retorna List<ReadProfessionalDTO>
     }
 
     @GetMapping("/{id}")

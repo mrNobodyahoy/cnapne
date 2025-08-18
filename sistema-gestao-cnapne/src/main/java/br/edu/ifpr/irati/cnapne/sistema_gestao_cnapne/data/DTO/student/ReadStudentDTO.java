@@ -6,21 +6,20 @@ import java.util.UUID;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 
 public record ReadStudentDTO(
-    UUID id,              
-    String registration,    
-    String completeName,
-    String team,
-    String email,
-    String phone,
-    String status,          
-    Date birthDate,         
-    String gender,          
-    String ethnicity        
-) {
-   
+        UUID id,
+        String registration,
+        String completeName,
+        String team,
+        String email,
+        String phone,
+        String status,
+        Date birthDate,
+        String gender,
+        String ethnicity) {
+
     public ReadStudentDTO(Student student) {
         this(
-            student.getId(),
+         student.getId(),
             student.getRegistration(),
             student.getCompleteName(),
             student.getTeam(),
@@ -29,7 +28,6 @@ public record ReadStudentDTO(
             student.getStatus(),
             student.getBirthDate(),
             student.getGender(),
-            student.getEthnicity()
-        );
+            student.getEthnicity());
     }
 }

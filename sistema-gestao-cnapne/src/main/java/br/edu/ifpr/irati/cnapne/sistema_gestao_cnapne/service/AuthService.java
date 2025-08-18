@@ -25,16 +25,12 @@ public class AuthService {
 
     public AuthResponseDTO authenticate(AuthRequestDTO authRequest) {
         try {
-            // 1. Cria o objeto de autenticação para o Spring Security
-            var authenticationToken = new UsernamePasswordAuthenticationToken(authRequest.login(), authRequest.password());
+            var authenticationToken = new UsernamePasswordAuthenticationToken(authRequest.email(), authRequest.password());
 
-            // 2. Efetivamente autentica (valida login e senha)
             var authentication = this.authenticationManager.authenticate(authenticationToken);
 
-            // 3. Se a autenticação foi bem-sucedida, pega os dados do usuário
             var user = (User) authentication.getPrincipal();
 
-            // 4. VALIDAÇÃO DE NEGÓCIO: Verifica se o usuário está ativo
             if (!user.isActive()) {
                 throw new AuthenticationException("Este usuário está desativado no sistema.") {};
             }
