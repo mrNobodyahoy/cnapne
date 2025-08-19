@@ -4,6 +4,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,14 +52,24 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     /*
-     Extrai o token JWT do cabeçalho.
+     * Extrai o token JWT do cabeçalho.
      */
     private String recoverToken(HttpServletRequest request) {
+        // 1) primeiro tenta Authorization header
         var authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            // apenas o token
             return authorizationHeader.substring(7);
+        }
+
+        // 2) tenta cookie "jwt"
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
+
 }
