@@ -1,13 +1,14 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthRequestDTO;
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthResponseDTO;
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthRequestDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthResponseDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 
 /**
  * autenticação de usuários.
@@ -38,8 +39,11 @@ public class AuthService {
             String token = jwtService.generateToken(user); 
             Role role = user.getProfile().getName();
 
-            return new AuthResponseDTO(token, role);
-
+return new AuthResponseDTO(
+        token,
+        user.getEmail(),
+        role
+);
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Login ou senha inválidos.");
         } catch (AuthenticationException e) {
