@@ -41,6 +41,8 @@
                             // Estudantes
                             .requestMatchers(HttpMethod.POST, "/api/v1/students").hasAuthority("ROLE_COORDENACAO_CNAPNE")
                             .requestMatchers(HttpMethod.GET, "/api/v1/students/**").hasAuthority("ROLE_COORDENACAO_CNAPNE")
+                            .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasAuthority("ROLE_COORDENACAO_CNAPNE")
+                            .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**").hasAuthority("ROLE_COORDENACAO_CNAPNE")
 
                             // Profissionais
                             .requestMatchers(HttpMethod.POST, "/api/v1/professionals")

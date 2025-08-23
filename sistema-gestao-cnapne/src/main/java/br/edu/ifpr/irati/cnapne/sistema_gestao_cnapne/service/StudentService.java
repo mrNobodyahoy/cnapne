@@ -1,5 +1,12 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
@@ -11,12 +18,6 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ProfileReposito
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.StudentRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 import jakarta.validation.Valid;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class StudentService {
@@ -52,7 +53,6 @@ public class StudentService {
         Student student = new Student();
         student.setEmail(dto.email());
         student.setPassword(passwordEncoder.encode(dto.password()));
-        // ... (resto dos set's está correto, só remover o setEmail duplicado)
         student.setProfile(studentProfile);
         student.setCompleteName(dto.completeName());
         student.setRegistration(dto.registration());
@@ -84,27 +84,19 @@ public class StudentService {
     }
 
     @Transactional
-    public ReadStudentDTO updateStudent(UUID id, @Valid CreateStudentDTO dto) {
+    public ReadStudentDTO updateStudent(UUID id, @Valid ReadStudentDTO dto) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
 
-        // (a lógica de validação de matrícula está correta)
-
-        // Correção: Lógica de validação de e-mail usando o userRepository
         userRepository.findByEmail(dto.email())
-                .filter(user -> !user.getId().equals(id)) // Ignora o próprio usuário
+                .filter(user -> !user.getId().equals(id)) 
                 .ifPresent(user -> {
                     throw new DataIntegrityViolationException("O email '" + dto.email() + "' já está em uso.");
                 });
 
         student.setEmail(dto.email());
-        if (dto.password() != null && !dto.password().isEmpty()) {
-            student.setPassword(passwordEncoder.encode(dto.password()));
-        }
-        // ... (resto dos set's está correto, só remover o setEmail duplicado)
         student.setCompleteName(dto.completeName());
         student.setRegistration(dto.registration());
-        // ... etc
 
         Student updated = studentRepository.save(student);
         return new ReadStudentDTO(updated);
