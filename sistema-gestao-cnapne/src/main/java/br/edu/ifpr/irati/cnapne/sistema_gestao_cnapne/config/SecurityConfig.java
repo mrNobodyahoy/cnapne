@@ -49,7 +49,7 @@
                             .hasAuthority("ROLE_COORDENACAO_CNAPNE")
                             .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**")
                             .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR")
-                            .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**")
+                            .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**")    
                             .hasAuthority("ROLE_COORDENACAO_CNAPNE")
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**")
                             .hasAuthority("ROLE_COORDENACAO_CNAPNE")

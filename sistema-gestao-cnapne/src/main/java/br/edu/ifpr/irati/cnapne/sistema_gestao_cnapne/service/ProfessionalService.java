@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.CreateProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.UpdateProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Profile;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
@@ -74,30 +75,29 @@ public class ProfessionalService {
     }
 
     @Transactional
-    public ReadProfessionalDTO updateProfessional(UUID id, @Valid CreateProfessionalDTO dto) {
-        Professional professional = professionalRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Profissional não encontrado com ID: " + id));
+public ReadProfessionalDTO updateProfessional(UUID id, @Valid UpdateProfessionalDTO dto) {
+    Professional professional = professionalRepository.findById(id)
+            .orElseThrow(() -> new DataNotFoundException("Profissional não encontrado com ID: " + id));
 
-        userRepository.findByEmail(dto.email())
-                .filter(user -> !user.getId().equals(id))
-                .ifPresent(user -> {
-                    throw new DataIntegrityViolationException("O e-mail informado já está em uso.");
-                });
+    userRepository.findByEmail(dto.email())
+            .filter(user -> !user.getId().equals(id))
+            .ifPresent(user -> {
+                throw new DataIntegrityViolationException("O e-mail informado já está em uso.");
+            });
 
-        Profile profile = profileRepository.findByName(Role.valueOf(dto.role()))
-                .orElseThrow(() -> new DataNotFoundException("Perfil '" + dto.role() + "' não encontrado."));
+    Profile profile = profileRepository.findByName(Role.valueOf(dto.role()))
+            .orElseThrow(() -> new DataNotFoundException("Perfil '" + dto.role() + "' não encontrado."));
 
-        professional.setEmail(dto.email());
-        if (dto.password() != null && !dto.password().isEmpty()) { 
-            professional.setPassword(passwordEncoder.encode(dto.password()));
-        }
-        professional.setFullName(dto.fullName());
-        professional.setSpecialty(dto.specialty());
-        professional.setProfile(profile);
+    professional.setEmail(dto.email());
+    professional.setFullName(dto.fullName());
+    professional.setSpecialty(dto.specialty());
+    professional.setProfile(profile);
+    professional.setActive(dto.active());
 
-        Professional updatedProfessional = professionalRepository.save(professional);
-        return new ReadProfessionalDTO(updatedProfessional);
-    }
+    Professional updatedProfessional = professionalRepository.save(professional);
+    return new ReadProfessionalDTO(updatedProfessional);
+}
+
 
     @Transactional
     public void deleteProfessional(UUID id) {

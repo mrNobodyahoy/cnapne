@@ -14,6 +14,9 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthResponse
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.LoginResponseDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -55,12 +58,37 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponseDTO> me(Authentication authentication) {
         User userDetails = (User) authentication.getPrincipal();
 
-        // Use o LoginResponseDTO que já existe
         var response = new LoginResponseDTO(
                 userDetails.getEmail(),
                 userDetails.getProfile().getName()
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+        summary = "Encerrar a sessão do usuário",
+        description = "Invalida o cookie de autenticação JWT, encerrando a sessão do usuário.",
+        responses = {
+            @ApiResponse(responseCode = "204", description = "Logout bem-sucedido", 
+                         content = @Content)
+        }
+    )
+    @PostMapping("/logout") // 💡 Recomendado usar POST para ações que alteram o estado.
+    public ResponseEntity<Void> logout(HttpServletResponse httpServletResponse) {
+        // 1. Cria um cookie com o mesmo nome, mas com valor vazio.
+        // 2. Define o maxAge como 0 para forçar o navegador a deletá-lo imediatamente.
+        // 3. O path e o httpOnly devem ser iguais ao cookie de login para que a deleção funcione corretamente.
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(false) // 🔐 Mantenha o mesmo valor do cookie de login
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0) // 💡 0 segundos para expiração imediata.
+                .build();
+
+        httpServletResponse.addHeader("Set-Cookie", jwtCookie.toString());
+
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content para indicar sucesso.
     }
 }
