@@ -1,7 +1,12 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,6 +16,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStu
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Profile;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Responsible;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.exception.DataIntegrityViolationException;
@@ -47,6 +53,14 @@ public class StudentService {
             throw new DataIntegrityViolationException("O email '" + dto.email() + "' já está em uso.");
         });
 
+        LocalDate birthDate = dto.birthDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int age = Period.between(birthDate, LocalDate.now()).getYears();
+
+        if (age < 18 && (dto.responsibles() == null || dto.responsibles().isEmpty())) {
+            throw new IllegalArgumentException(
+                    "Estudantes menores de 18 anos devem ter pelo menos um responsável cadastrado.");
+        }
+
         Profile studentProfile = profileRepository.findByName(Role.ESTUDANTE)
                 .orElseThrow(() -> new IllegalStateException("Perfil ESTUDANTE não encontrado."));
 
@@ -63,6 +77,19 @@ public class StudentService {
         student.setEthnicity(dto.ethnicity());
         student.setStatus("ATIVO");
         student.setActive(true);
+        student.setResponsibles(new ArrayList<>());
+
+        if (dto.responsibles() != null && !dto.responsibles().isEmpty()) {
+            dto.responsibles().forEach(respDto -> {
+                Responsible responsible = new Responsible();
+                responsible.setCompleteName(respDto.completeName());
+                responsible.setEmail(respDto.email());
+                responsible.setPhone(respDto.phone());
+                responsible.setKinship(respDto.kinship());
+                responsible.setStudent(student); // Associa o responsável ao estudante
+                student.getResponsibles().add(responsible);
+            });
+        }
 
         Student savedStudent = studentRepository.save(student);
         return new ReadStudentDTO(savedStudent);
@@ -89,7 +116,7 @@ public class StudentService {
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
 
         userRepository.findByEmail(dto.email())
-                .filter(user -> !user.getId().equals(id)) 
+                .filter(user -> !user.getId().equals(id))
                 .ifPresent(user -> {
                     throw new DataIntegrityViolationException("O email '" + dto.email() + "' já está em uso.");
                 });
@@ -113,16 +140,18 @@ public class StudentService {
     public List<ReadStudentSummaryDTO> searchByName(String name) {
         return studentRepository.findByCompleteNameContainingIgnoreCase(name)
                 .stream()
-                .map(s -> new ReadStudentSummaryDTO(s.getId(), s.getCompleteName(), s.getRegistration()))
-                .toList();
+                .map(s -> new ReadStudentSummaryDTO(s.getId(), s.getCompleteName(), s.getRegistration(), s.getEmail(),
+                        s.isActive()? "ATIVO" : "INATIVO"))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ReadStudentSummaryDTO> searchByRegistration(String registration) {
         return studentRepository.findByRegistrationContainingIgnoreCase(registration)
                 .stream()
-                .map(s -> new ReadStudentSummaryDTO(s.getId(), s.getCompleteName(), s.getRegistration()))
-                .toList();
+                .map(s -> new ReadStudentSummaryDTO(s.getId(), s.getCompleteName(), s.getRegistration(), s.getEmail(),
+                        s.isActive()? "ATIVO" : "INATIVO"))
+                .collect(Collectors.toList());
     }
 
 }

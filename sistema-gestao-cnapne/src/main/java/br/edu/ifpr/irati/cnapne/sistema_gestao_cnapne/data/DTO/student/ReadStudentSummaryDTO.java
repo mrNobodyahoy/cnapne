@@ -5,5 +5,7 @@ import java.util.UUID;
 public record ReadStudentSummaryDTO(
         UUID id,
         String completeName,
-        String registration
+        String registration,
+        String email,
+        String status
 ) {}

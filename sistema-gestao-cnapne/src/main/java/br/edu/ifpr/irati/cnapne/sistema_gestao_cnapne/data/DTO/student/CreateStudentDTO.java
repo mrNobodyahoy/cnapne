@@ -1,7 +1,14 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student;
 
-import jakarta.validation.constraints.*;
 import java.util.Date;
+import java.util.List;
+
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.responsible.ResponsibleDTO; // <<< MUDANÇA AQUI
+import jakarta.validation.constraints.Email; // <<< MUDANÇA AQUI
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 
 public record CreateStudentDTO(
 
@@ -36,5 +43,7 @@ public record CreateStudentDTO(
     String gender,
 
     @NotBlank(message = "A etnia é obrigatória.")
-    String ethnicity
+    String ethnicity,
+    
+    List<ResponsibleDTO> responsibles
 ) {}
