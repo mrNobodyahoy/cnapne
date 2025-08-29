@@ -19,6 +19,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.ApiErrorDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.UpdateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -66,7 +67,7 @@ public class StudentController {
     @PutMapping("/{id}")
     public ResponseEntity<ReadStudentDTO> updateStudent(
             @PathVariable UUID id,
-            @RequestBody @Valid ReadStudentDTO dto) {
+            @RequestBody @Valid UpdateStudentDTO dto) { 
         ReadStudentDTO updated = studentService.updateStudent(id, dto);
         return ResponseEntity.ok(updated);
     }
@@ -77,14 +78,9 @@ public class StudentController {
         return ResponseEntity.noContent().build(); // 204
     }
 
-    @GetMapping("/search/by-name")
-    public ResponseEntity<List<ReadStudentSummaryDTO>> searchByName(@RequestParam String name) {
-        return ResponseEntity.ok(studentService.searchByName(name));
-    }
-
-    @GetMapping("/search/by-registration")
-    public ResponseEntity<List<ReadStudentSummaryDTO>> searchByRegistration(@RequestParam String registration) {
-        return ResponseEntity.ok(studentService.searchByRegistration(registration));
+    @GetMapping("/search")
+    public ResponseEntity<List<ReadStudentSummaryDTO>> search(@RequestParam String query) {
+        return ResponseEntity.ok(studentService.search(query));
     }
 
 }

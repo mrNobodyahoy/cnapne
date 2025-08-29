@@ -34,7 +34,6 @@ public record ReadStudentDTO(
             student.getBirthDate(),
             student.getGender(),
             student.getEthnicity(),
-            // <<< MUDANÇA AQUI: Mapeia a lista de entidades para DTOs
             student.getResponsibles() != null ? student.getResponsibles().stream()
                 .map(ResponsibleDTO::new)
                 .collect(Collectors.toList()) : List.of()

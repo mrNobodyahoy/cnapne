@@ -6,6 +6,6 @@ public record ReadStudentSummaryDTO(
         UUID id,
         String completeName,
         String registration,
-        String email,
+        String team,
         String status
 ) {}

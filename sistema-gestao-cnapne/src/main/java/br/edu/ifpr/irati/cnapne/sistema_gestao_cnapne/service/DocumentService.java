@@ -1,8 +1,13 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,5 +75,11 @@ public class DocumentService {
             throw new RuntimeException("Erro ao excluir arquivo físico", e);
         }
         documentRepository.delete(doc);
+ 
+   }
+
+   public Document getDocumentByIdAndStudentId(UUID docId, UUID studentId) {
+        return documentRepository.findByIdAndStudentId(docId, studentId)
+                .orElseThrow(() -> new DataNotFoundException("Documento não encontrado ou não pertence a este estudante."));
     }
 }

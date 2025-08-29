@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.UpdateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Profile;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Responsible;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
@@ -86,7 +87,7 @@ public class StudentService {
                 responsible.setEmail(respDto.email());
                 responsible.setPhone(respDto.phone());
                 responsible.setKinship(respDto.kinship());
-                responsible.setStudent(student); // Associa o responsável ao estudante
+                responsible.setStudent(student); 
                 student.getResponsibles().add(responsible);
             });
         }
@@ -111,7 +112,7 @@ public class StudentService {
     }
 
     @Transactional
-    public ReadStudentDTO updateStudent(UUID id, @Valid ReadStudentDTO dto) {
+    public ReadStudentDTO updateStudent(UUID id, @Valid UpdateStudentDTO dto) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
 
@@ -124,6 +125,11 @@ public class StudentService {
         student.setEmail(dto.email());
         student.setCompleteName(dto.completeName());
         student.setRegistration(dto.registration());
+        student.setTeam(dto.team());
+        student.setBirthDate(dto.birthDate());
+        student.setPhone(dto.phone()); 
+        student.setGender(dto.gender());
+        student.setEthnicity(dto.ethnicity());
 
         Student updated = studentRepository.save(student);
         return new ReadStudentDTO(updated);
@@ -133,24 +139,28 @@ public class StudentService {
     public void deleteStudent(UUID id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
+
         studentRepository.delete(student);
     }
 
     @Transactional(readOnly = true)
-    public List<ReadStudentSummaryDTO> searchByName(String name) {
-        return studentRepository.findByCompleteNameContainingIgnoreCase(name)
-                .stream()
-                .map(s -> new ReadStudentSummaryDTO(s.getId(), s.getCompleteName(), s.getRegistration(), s.getEmail(),
-                        s.isActive()? "ATIVO" : "INATIVO"))
-                .collect(Collectors.toList());
-    }
+    public List<ReadStudentSummaryDTO> search(String query) {
+        final String isNumericRegex = "^\\d+$";
 
-    @Transactional(readOnly = true)
-    public List<ReadStudentSummaryDTO> searchByRegistration(String registration) {
-        return studentRepository.findByRegistrationContainingIgnoreCase(registration)
-                .stream()
-                .map(s -> new ReadStudentSummaryDTO(s.getId(), s.getCompleteName(), s.getRegistration(), s.getEmail(),
-                        s.isActive()? "ATIVO" : "INATIVO"))
+        List<Student> students;
+        if (query.matches(isNumericRegex)) {
+            students = studentRepository.findByRegistrationContainingIgnoreCase(query);
+        } else {
+            students = studentRepository.findByCompleteNameContainingIgnoreCase(query);
+        }
+
+        return students.stream()
+                .map(s -> new ReadStudentSummaryDTO(
+                        s.getId(),
+                        s.getCompleteName(),
+                        s.getRegistration(),
+                        s.getTeam(),
+                        s.isActive() ? "ATIVO" : "INATIVO"))
                 .collect(Collectors.toList());
     }
 
