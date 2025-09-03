@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpMethod; // Importe o HttpMethod
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,58 +33,40 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // ▼▼▼ ADICIONE ESTA LINHA PRIMEIRO ▼▼▼
+                        // Permite todas as requisições de preflight (OPTIONS) do CORS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Autenticação
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
-
-                        // Estudantes
-                        .requestMatchers(HttpMethod.POST, "/api/v1/students").hasAuthority("ROLE_COORDENACAO_CNAPNE")
-
-                        // estudantes.
-                        .requestMatchers(HttpMethod.GET, "/api/v1/students/**")
-                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR")
-
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasAuthority("ROLE_COORDENACAO_CNAPNE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**")
-                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
-
-                        // Profissionais
-                        .requestMatchers(HttpMethod.POST, "/api/v1/professionals")
-                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**")
-                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**")
-                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**")
-                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
+                        .requestMatchers("/api/v1/students/me").hasRole("ESTUDANTE")
 
                         // Documentos
-                        .requestMatchers(HttpMethod.POST, "/api/v1/students/*/documents")
-                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/students/*/documents/**")
-                        .hasAnyAuthority("ROLE_COORDENACAO_CNAPNE", "ROLE_EQUIPE_MULTIDISCIPLINAR", "ROLE_ESTUDANTE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/students/*/documents/**")
-                        .hasAuthority("ROLE_COORDENACAO_CNAPNE")
+                        .requestMatchers("/api/v1/students/*/documents/**").permitAll()
+                        // Estudantes (demais rotas)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/students").hasRole("COORDENACAO_CNAPNE")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/students/**")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_MULTIDISCIPLINAR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
+
+                        // Profissionais
+                        .requestMatchers("/api/v1/professionals/**").hasRole("COORDENACAO_CNAPNE")
 
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-    /**
-     * Configuração de CORS para permitir cookies (credentials).
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // origens permitidas (ex.: seu frontend React em dev)
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true); // necessário para cookies
-
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

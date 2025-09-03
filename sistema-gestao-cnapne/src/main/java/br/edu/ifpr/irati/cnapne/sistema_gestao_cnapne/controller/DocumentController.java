@@ -66,7 +66,6 @@ public class DocumentController {
                     contentType = "application/octet-stream";
                 }
                 
-                // Valida o parâmetro para segurança
                 String validDisposition = "attachment".equalsIgnoreCase(disposition) ? "attachment" : "inline";
 
                 return ResponseEntity.ok()

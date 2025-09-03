@@ -87,7 +87,7 @@ public class StudentService {
                 responsible.setEmail(respDto.email());
                 responsible.setPhone(respDto.phone());
                 responsible.setKinship(respDto.kinship());
-                responsible.setStudent(student); 
+                responsible.setStudent(student);
                 student.getResponsibles().add(responsible);
             });
         }
@@ -127,9 +127,10 @@ public class StudentService {
         student.setRegistration(dto.registration());
         student.setTeam(dto.team());
         student.setBirthDate(dto.birthDate());
-        student.setPhone(dto.phone()); 
+        student.setPhone(dto.phone());
         student.setGender(dto.gender());
         student.setEthnicity(dto.ethnicity());
+        student.setStatus(dto.status());
 
         Student updated = studentRepository.save(student);
         return new ReadStudentDTO(updated);
@@ -141,6 +142,21 @@ public class StudentService {
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
 
         studentRepository.delete(student);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadStudentSummaryDTO> findByStatus(String status) {
+        List<Student> students = studentRepository.findByStatus(status);
+
+        return students.stream()
+                .map(s -> new ReadStudentSummaryDTO(
+                        s.getId(),
+                        s.getCompleteName(),
+                        s.getRegistration(),
+                        s.getTeam(),
+                        s.getStatus() 
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

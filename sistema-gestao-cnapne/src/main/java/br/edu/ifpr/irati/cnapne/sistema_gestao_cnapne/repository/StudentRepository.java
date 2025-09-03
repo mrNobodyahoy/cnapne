@@ -18,4 +18,6 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     List<Student> findByRegistrationContainingIgnoreCase(String registration);
 
+    List<Student> findByStatus(String status);
+
 }

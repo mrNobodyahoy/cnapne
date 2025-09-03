@@ -1,10 +1,11 @@
-// Crie este novo arquivo:
-// src/main/java/br/edu/ifpr/irati/cnapne/sistema_gestao_cnapne/data/DTO/student/UpdateStudentDTO.java
-
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student;
 
 import java.util.Date;
-import jakarta.validation.constraints.*;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 
 public record UpdateStudentDTO(
     @NotBlank(message = "O e-mail é obrigatório.")
@@ -31,5 +32,9 @@ public record UpdateStudentDTO(
     String gender,
 
     @NotBlank(message = "A etnia é obrigatória.")
-    String ethnicity
+    String ethnicity,
+
+    // ADICIONE ESTA LINHA
+    @NotBlank(message = "O status é obrigatório.")
+    String status
 ) {}

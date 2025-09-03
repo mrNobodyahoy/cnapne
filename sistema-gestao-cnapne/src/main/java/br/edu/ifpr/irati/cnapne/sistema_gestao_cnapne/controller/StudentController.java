@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStu
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.UpdateStudentDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -50,7 +52,6 @@ public class StudentController {
     public ResponseEntity<ReadStudentDTO> createStudent(@Valid @RequestBody CreateStudentDTO dto) {
         ReadStudentDTO createdStudent = studentService.createStudent(dto);
 
-        // Retorna a resposta 201 e o DTO do estudante
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStudent);
     }
 
@@ -67,7 +68,7 @@ public class StudentController {
     @PutMapping("/{id}")
     public ResponseEntity<ReadStudentDTO> updateStudent(
             @PathVariable UUID id,
-            @RequestBody @Valid UpdateStudentDTO dto) { 
+            @RequestBody @Valid UpdateStudentDTO dto) {
         ReadStudentDTO updated = studentService.updateStudent(id, dto);
         return ResponseEntity.ok(updated);
     }
@@ -81,6 +82,20 @@ public class StudentController {
     @GetMapping("/search")
     public ResponseEntity<List<ReadStudentSummaryDTO>> search(@RequestParam String query) {
         return ResponseEntity.ok(studentService.search(query));
+    }
+
+    @Operation(summary = "Filtrar estudantes por status", description = "Retorna uma lista de estudantes com base em um status específico (ex: 'ATIVO' ou 'INATIVO').")
+    @GetMapping("/filter")
+    public ResponseEntity<List<ReadStudentSummaryDTO>> getStudentsByStatus(@RequestParam String status) {
+        List<ReadStudentSummaryDTO> students = studentService.findByStatus(status);
+        return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ReadStudentDTO> getAuthenticatedStudent(@AuthenticationPrincipal User userDetails) {
+        UUID studentId = userDetails.getId();
+        ReadStudentDTO studentDTO = studentService.getStudentById(studentId);
+        return ResponseEntity.ok(studentDTO);
     }
 
 }
