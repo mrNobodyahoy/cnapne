@@ -154,8 +154,7 @@ public class StudentService {
                         s.getCompleteName(),
                         s.getRegistration(),
                         s.getTeam(),
-                        s.getStatus() 
-                ))
+                        s.getStatus()))
                 .collect(Collectors.toList());
     }
 
@@ -171,13 +170,12 @@ public class StudentService {
         }
 
         return students.stream()
-                .map(s -> new ReadStudentSummaryDTO(
-                        s.getId(),
-                        s.getCompleteName(),
-                        s.getRegistration(),
-                        s.getTeam(),
-                        s.isActive() ? "ATIVO" : "INATIVO"))
-                .collect(Collectors.toList());
+            .map(s -> new ReadStudentSummaryDTO(
+                    s.getId(),
+                    s.getCompleteName(),
+                    s.getRegistration(),
+                    s.getTeam(),
+                    s.getStatus())) // <-- Pega o status REAL do aluno no banco
+            .collect(Collectors.toList());
     }
-
 }

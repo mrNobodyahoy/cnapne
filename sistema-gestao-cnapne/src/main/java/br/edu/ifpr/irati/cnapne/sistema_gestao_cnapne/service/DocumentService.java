@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.document.ReadDocumentDTO;
@@ -34,18 +35,32 @@ public class DocumentService {
                 .orElseThrow(() -> new DataNotFoundException("Estudante não encontrado"));
 
         String uploadDir = "uploads/student/" + studentId;
-        Path path = Paths.get(uploadDir);
-        Files.createDirectories(path);
+        Path uploadPath = Paths.get(uploadDir);
+        Files.createDirectories(uploadPath);
 
-        String filePath = path.resolve(file.getOriginalFilename()).toString();
-        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+        // ===== INÍCIO DA ALTERAÇÃO =====
+
+        // 1. Obter o nome e a extensão originais do arquivo de forma segura
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        String extension = StringUtils.getFilenameExtension(originalFilename);
+
+        // 2. Gerar um nome de arquivo único e aleatório usando UUID
+        String uniqueFilename = UUID.randomUUID().toString() + "." + extension;
+
+        // 3. Criar o caminho final no servidor com o NOME ÚNICO
+        Path filePath = uploadPath.resolve(uniqueFilename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         Document doc = new Document();
-        doc.setFileName(file.getOriginalFilename());
+        // 4. Salvar o NOME ORIGINAL no banco de dados (para exibição)
+        doc.setFileName(originalFilename);
         doc.setDocumentType(documentType);
         doc.setAttachmentDate(new Date());
-        doc.setPathFile(filePath);
+        // 5. Salvar o CAMINHO COMPLETO COM O NOME ÚNICO no banco de dados
+        doc.setPathFile(filePath.toString());
         doc.setStudent(student);
+
+        // ===== FIM DA ALTERAÇÃO =====
 
         Document saved = documentRepository.save(doc);
 
@@ -75,11 +90,12 @@ public class DocumentService {
             throw new RuntimeException("Erro ao excluir arquivo físico", e);
         }
         documentRepository.delete(doc);
- 
-   }
 
-   public Document getDocumentByIdAndStudentId(UUID docId, UUID studentId) {
+    }
+
+    public Document getDocumentByIdAndStudentId(UUID docId, UUID studentId) {
         return documentRepository.findByIdAndStudentId(docId, studentId)
-                .orElseThrow(() -> new DataNotFoundException("Documento não encontrado ou não pertence a este estudante."));
+                .orElseThrow(
+                        () -> new DataNotFoundException("Documento não encontrado ou não pertence a este estudante."));
     }
 }

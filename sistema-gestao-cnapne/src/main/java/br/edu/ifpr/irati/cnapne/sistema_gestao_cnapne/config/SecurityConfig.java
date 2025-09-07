@@ -33,8 +33,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ▼▼▼ ADICIONE ESTA LINHA PRIMEIRO ▼▼▼
-                        // Permite todas as requisições de preflight (OPTIONS) do CORS
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Autenticação
@@ -44,11 +42,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/students/me").hasRole("ESTUDANTE")
 
                         // Documentos
-                        .requestMatchers("/api/v1/students/*/documents/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/students/*/documents/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/students/*/documents/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/documents/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/students/*/documents/**").permitAll()
                         // Estudantes (demais rotas)
                         .requestMatchers(HttpMethod.POST, "/api/v1/students").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/**")
-                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_MULTIDISCIPLINAR")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
 
@@ -65,7 +66,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Content-Disposition"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

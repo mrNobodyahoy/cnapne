@@ -40,10 +40,10 @@ public class AuthenticationController {
 
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", authInternalResponse.token())
                 .httpOnly(true)
-                .secure(false) // 🔐 mudar pra true em produção (https)
+                .secure(false) // 🔐 mudar pra true para https
                 .sameSite("Strict")
                 .path("/")
-                .maxAge(2 * 60 * 60) // 2h
+                .maxAge(2 * 60 * 60) 
                 .build();
 
         httpServletResponse.addHeader("Set-Cookie", jwtCookie.toString());
@@ -74,21 +74,18 @@ public class AuthenticationController {
                          content = @Content)
         }
     )
-    @PostMapping("/logout") // 💡 Recomendado usar POST para ações que alteram o estado.
+    @PostMapping("/logout") 
     public ResponseEntity<Void> logout(HttpServletResponse httpServletResponse) {
-        // 1. Cria um cookie com o mesmo nome, mas com valor vazio.
-        // 2. Define o maxAge como 0 para forçar o navegador a deletá-lo imediatamente.
-        // 3. O path e o httpOnly devem ser iguais ao cookie de login para que a deleção funcione corretamente.
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", "")
                 .httpOnly(true)
-                .secure(false) // 🔐 Mantenha o mesmo valor do cookie de login
+                .secure(false) //o mesmo valor do cookie de login
                 .sameSite("Strict")
                 .path("/")
-                .maxAge(0) // 💡 0 segundos para expiração imediata.
+                .maxAge(0) 
                 .build();
 
         httpServletResponse.addHeader("Set-Cookie", jwtCookie.toString());
 
-        return ResponseEntity.noContent().build(); // Retorna 204 No Content para indicar sucesso.
+        return ResponseEntity.noContent().build(); 
     }
 }
