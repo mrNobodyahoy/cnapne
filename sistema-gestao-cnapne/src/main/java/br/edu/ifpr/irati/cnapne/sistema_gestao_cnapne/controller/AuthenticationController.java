@@ -34,7 +34,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid AuthRequestDTO authData,
-                                                  HttpServletResponse httpServletResponse) {
+            HttpServletResponse httpServletResponse) {
 
         AuthResponseDTO authInternalResponse = authService.authenticate(authData);
 
@@ -43,15 +43,14 @@ public class AuthenticationController {
                 .secure(false) // 🔐 mudar pra true para https
                 .sameSite("Strict")
                 .path("/")
-                .maxAge(2 * 60 * 60) 
+                .maxAge(2 * 60 * 60)
                 .build();
 
         httpServletResponse.addHeader("Set-Cookie", jwtCookie.toString());
 
         return ResponseEntity.ok(new LoginResponseDTO(
                 authInternalResponse.email(),
-                authInternalResponse.role()
-        ));
+                authInternalResponse.role()));
     }
 
     @GetMapping("/me")
@@ -60,32 +59,26 @@ public class AuthenticationController {
 
         var response = new LoginResponseDTO(
                 userDetails.getEmail(),
-                userDetails.getProfile().getName()
-        );
+                userDetails.getProfile().getName());
 
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-        summary = "Encerrar a sessão do usuário",
-        description = "Invalida o cookie de autenticação JWT, encerrando a sessão do usuário.",
-        responses = {
-            @ApiResponse(responseCode = "204", description = "Logout bem-sucedido", 
-                         content = @Content)
-        }
-    )
-    @PostMapping("/logout") 
+    @Operation(summary = "Encerrar a sessão do usuário", description = "Invalida o cookie de autenticação JWT, encerrando a sessão do usuário.", responses = {
+            @ApiResponse(responseCode = "204", description = "Logout bem-sucedido", content = @Content)
+    })
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse httpServletResponse) {
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", "")
                 .httpOnly(true)
-                .secure(false) //o mesmo valor do cookie de login
+                .secure(false) 
                 .sameSite("Strict")
                 .path("/")
-                .maxAge(0) 
+                .maxAge(0)
                 .build();
 
         httpServletResponse.addHeader("Set-Cookie", jwtCookie.toString());
 
-        return ResponseEntity.noContent().build(); 
+        return ResponseEntity.noContent().build();
     }
 }

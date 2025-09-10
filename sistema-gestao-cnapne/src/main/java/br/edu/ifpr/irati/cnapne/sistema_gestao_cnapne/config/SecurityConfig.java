@@ -41,20 +41,37 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/students/me").hasRole("ESTUDANTE")
 
-                        // Documentos
+                        // Documentos (sem alteração)
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/*/documents/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/students/*/documents/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/documents/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/*/documents/**").permitAll()
-                        // Estudantes (demais rotas)
+
+                        // Estudantes (demais rotas - sem alteração)
                         .requestMatchers(HttpMethod.POST, "/api/v1/students").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
 
-                        // Profissionais
-                        .requestMatchers("/api/v1/professionals/**").hasRole("COORDENACAO_CNAPNE")
+                        // Profissionais (COM A ALTERAÇÃO)
+                        // VVVV ADICIONE ESTA REGRA AQUI VVVV
+                        .requestMatchers("/api/v1/professionals/me")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
+
+                        // Esta regra geral continua como estava, mas agora a regra do /me será lida
+                        // primeiro
+                        .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**") // Listar, Buscar, Filtrar
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/professionals") // Criar
+                        .hasRole("COORDENACAO_CNAPNE")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**") // Editar
+                        .hasRole("COORDENACAO_CNAPNE")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**") // Deletar
+                        .hasRole("COORDENACAO_CNAPNE")
 
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

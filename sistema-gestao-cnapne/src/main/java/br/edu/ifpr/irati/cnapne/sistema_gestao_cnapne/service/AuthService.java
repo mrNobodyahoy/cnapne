@@ -52,7 +52,8 @@ public class AuthService {
                     LocalDate nascimento = dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                     int idade = Period.between(nascimento, LocalDate.now()).getYears();
                     if (idade < 18) {
-                        throw new AuthenticationException("Acesso restrito para menores de 18 anos."){};
+                        throw new AuthenticationException("Acesso restrito para menores de 18 anos.") {
+                        };
                     }
 
                 }

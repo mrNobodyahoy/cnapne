@@ -1,21 +1,20 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.config;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List; // Importe ArrayList
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Profile;
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Responsible; // Importe Responsible
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;     // Importe Student
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Responsible;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ProfileRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
@@ -23,14 +22,16 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
-    @Autowired
-    private ProfileRepository profileRepository;
+    private final ProfileRepository profileRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // Injeção de dependência via construtor (melhor prática)
+    public DataSeeder(ProfileRepository profileRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.profileRepository = profileRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -44,13 +45,13 @@ public class DataSeeder implements CommandLineRunner {
             }
         });
 
-        // --- CRIAÇÃO DO USUÁRIO COORDENADOR ---
-        if (userRepository.findByEmail("coordenador@gmail.com").isEmpty()) {
+        // --- CRIAÇÃO DO USUÁRIO COORDENADOR PADRÃO ---
+        if (userRepository.findByEmail("coordenador@ifpr.edu.br").isEmpty()) {
             Profile coordProfile = profileRepository.findByName(Role.COORDENACAO_CNAPNE)
-                .orElseThrow(() -> new RuntimeException("Perfil COORDENACAO_CNAPNE não foi encontrado."));
+                .orElseThrow(() -> new RuntimeException("Perfil COORDENACAO_CNAPNE não encontrado."));
 
             Professional coord = new Professional();
-            coord.setEmail("coordenador@gmail.com");
+            coord.setEmail("coordenador@ifpr.edu.br");
             coord.setPassword(passwordEncoder.encode("admin123"));
             coord.setProfile(coordProfile);
             coord.setActive(true);
@@ -60,76 +61,70 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(coord);
             System.out.println("Usuário 'coordenador' padrão criado com sucesso.");
         }
-        
-        // ======================================================================
-        //               >>> INÍCIO DA POPULAÇÃO DE ESTUDANTES <<<
-        // ======================================================================
 
-        // Busca o perfil de Estudante uma única vez
+        // --- POPULAÇÃO DE ESTUDANTES (20) ---
         Profile studentProfile = profileRepository.findByName(Role.ESTUDANTE)
             .orElseThrow(() -> new RuntimeException("Perfil ESTUDANTE não encontrado."));
 
-        // --- ESTUDANTE 1: ANA SILVA (MAIOR DE IDADE) ---
-        if (userRepository.findByEmail("ana.silva@email.com").isEmpty()) {
-            Student ana = new Student();
-            
-            // Dados de User
-            ana.setEmail("ana.silva@email.com");
-            ana.setPassword(passwordEncoder.encode("aluno123"));
-            ana.setActive(true);
-            ana.setProfile(studentProfile);
+        for (int i = 1; i <= 20; i++) {
+            String email = "aluno" + i + "@ifpr.edu.br";
+            if (userRepository.findByEmail(email).isEmpty()) {
+                Student student = new Student();
+                student.setEmail(email);
+                student.setPassword(passwordEncoder.encode("aluno123"));
+                student.setActive(i % 10 != 0); // Torna 2 estudantes inativos
+                student.setProfile(studentProfile);
+                student.setCompleteName("Aluno " + i);
+                student.setRegistration("2024" + String.format("%04d", i));
+                student.setTeam("TURMA" + ((i % 4) + 1));
+                student.setBirthDate(Date.from(
+                        LocalDate.of(2005 + (i % 5), (i % 12) + 1, (i % 28) + 1)
+                                .atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                student.setPhone("4299" + (100000 + i));
+                student.setGender(i % 2 == 0 ? "Masculino" : "Feminino");
+                student.setEthnicity(i % 3 == 0 ? "Branca" : "Parda");
+                student.setStatus(student.isActive() ? "ATIVO" : "INATIVO");
 
-            // Dados de Student
-            ana.setCompleteName("Ana Silva");
-            ana.setRegistration("2024001001");
-            ana.setTeam("INFO3");
-            ana.setBirthDate(Date.from(LocalDate.of(2005, 5, 15).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            ana.setPhone("42999887766");
-            ana.setGender("Feminino");
-            ana.setEthnicity("Branca");
-            ana.setStatus("ATIVO");
+                // Adiciona responsável se for menor de 18 (cálculo corrigido)
+                LocalDate birthDate = student.getBirthDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                int age = Period.between(birthDate, LocalDate.now()).getYears();
+                if (age < 18) {
+                    Responsible resp = new Responsible();
+                    resp.setCompleteName("Responsável do Aluno " + i);
+                    resp.setEmail("responsavel" + i + "@gmail.com");
+                    resp.setPhone("4298" + (200000 + i));
+                    resp.setKinship("Pai/Mãe");
+                    resp.setStudent(student);
+                    student.setResponsibles(List.of(resp));
+                }
 
-            userRepository.save(ana);
-            System.out.println("Estudante 'Ana Silva' criada com sucesso.");
+                userRepository.save(student);
+                System.out.println("Estudante '" + student.getCompleteName() + "' criado.");
+            }
         }
 
-        // --- ESTUDANTE 2: BRUNO COSTA (MENOR DE IDADE COM RESPONSÁVEL) ---
-        if (userRepository.findByEmail("bruno.costa@email.com").isEmpty()) {
-            Student bruno = new Student();
+        // --- POPULAÇÃO DE PROFISSIONAIS (20) ---
+        List<Role> professionalRoles = List.of(Role.EQUIPE_ACOMPANHAMENTO, Role.EQUIPE_AEE);
+        List<String> specialties = List.of("Psicologia", "Pedagogia", "Assistência Social", "Outros");
 
-            // Dados de User
-            bruno.setEmail("bruno.costa@email.com");
-            bruno.setPassword(passwordEncoder.encode("aluno123"));
-            bruno.setActive(true);
-            bruno.setProfile(studentProfile);
+        for (int i = 1; i <= 20; i++) {
+            String email = "profissional" + i + "@ifpr.edu.br";
+            if (userRepository.findByEmail(email).isEmpty()) {
+                Role role = professionalRoles.get(i % professionalRoles.size());
+                Profile profProfile = profileRepository.findByName(role)
+                    .orElseThrow(() -> new RuntimeException("Perfil " + role + " não encontrado."));
 
-            // Dados de Student
-            bruno.setCompleteName("Bruno Costa");
-            bruno.setRegistration("2024002002");
-            bruno.setTeam("AGRO2");
-            bruno.setBirthDate(Date.from(LocalDate.of(2008, 10, 20).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            bruno.setPhone("42988776655");
-            bruno.setGender("Masculino");
-            bruno.setEthnicity("Parda");
-            bruno.setStatus("ATIVO");
-
-            // Criação do Responsável
-            Responsible maria = new Responsible();
-            maria.setCompleteName("Maria Costa");
-            maria.setEmail("maria.costa@email.com");
-            maria.setPhone("42988112233");
-            maria.setKinship("Mãe");
-            maria.setStudent(bruno); // << Associa o responsável ao estudante
-
-            // Adiciona o responsável à lista do estudante
-            bruno.setResponsibles(new ArrayList<>(List.of(maria)));
-
-            userRepository.save(bruno); // << Salva o estudante (o responsável será salvo em cascata)
-            System.out.println("Estudante 'Bruno Costa' e sua responsável foram criados com sucesso.");
+                Professional professional = new Professional();
+                professional.setEmail(email);
+                professional.setPassword(passwordEncoder.encode("profissional123"));
+                professional.setActive(i % 10 != 0); // Torna 2 profissionais inativos
+                professional.setProfile(profProfile);
+                professional.setFullName("Profissional " + i);
+                professional.setSpecialty(specialties.get(i % specialties.size()));
+                
+                userRepository.save(professional);
+                System.out.println("Profissional '" + professional.getFullName() + "' criado.");
+            }
         }
-
-        // ======================================================================
-        //                >>> FIM DA POPULAÇÃO DE ESTUDANTES <<<
-        // ======================================================================
     }
 }

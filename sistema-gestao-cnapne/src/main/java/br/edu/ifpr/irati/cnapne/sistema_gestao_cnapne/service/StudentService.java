@@ -175,7 +175,7 @@ public class StudentService {
                     s.getCompleteName(),
                     s.getRegistration(),
                     s.getTeam(),
-                    s.getStatus())) // <-- Pega o status REAL do aluno no banco
+                    s.getStatus())) 
             .collect(Collectors.toList());
     }
 }
