@@ -64,14 +64,22 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**") // Listar, Buscar, Filtrar
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
-                        .requestMatchers(HttpMethod.POST, "/api/v1/professionals") // Criar
+                        .requestMatchers(HttpMethod.POST, "/api/v1/professionals")
                         .hasRole("COORDENACAO_CNAPNE")
 
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**") // Editar
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**")
                         .hasRole("COORDENACAO_CNAPNE")
 
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**") // Deletar
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**")
                         .hasRole("COORDENACAO_CNAPNE")
+
+                        // ATENDIMENTOS
+                        .requestMatchers("/api/v1/atendimentos/**")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
+
+                        // ACOMPANHMENTOS
+                        .requestMatchers("/api/v1/acompanhamentos/**")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

@@ -2,8 +2,6 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneId;
-import java.util.Date;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -46,18 +44,19 @@ public class AuthService {
             }
             if (user.getProfile().getName() == Role.ESTUDANTE) {
                 Student student = (Student) user;
-                Date dataNascimento = student.getBirthDate();
+
+                LocalDate dataNascimento = student.getBirthDate();
 
                 if (dataNascimento != null) {
-                    LocalDate nascimento = dataNascimento.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    int idade = Period.between(nascimento, LocalDate.now()).getYears();
+
+                    int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
                     if (idade < 18) {
                         throw new AuthenticationException("Acesso restrito para menores de 18 anos.") {
                         };
                     }
-
                 }
             }
+
             String token = jwtService.generateToken(user);
             Role role = user.getProfile().getName();
 

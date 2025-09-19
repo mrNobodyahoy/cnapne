@@ -25,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "profile")
+@Table(name = "profiles")
 public class Profile implements GrantedAuthority {
 
     @Id

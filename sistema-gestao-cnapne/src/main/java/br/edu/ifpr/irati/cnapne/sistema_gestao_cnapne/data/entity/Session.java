@@ -1,7 +1,11 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity;
 
-import java.util.Date;
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,42 +13,51 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "documents")
-public class Document {
+@Table(name = "sessions")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Session {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private UUID sessionId;
 
-    @NotBlank(message = "O nome do arquivo é obrigatório")
+    @NotNull(message = "A data da Sessão é obrigatoria")
     @Column(nullable = false)
-    private String fileName;
+    private LocalDate sessionDate;
 
-    @NotBlank(message = "O tipo do documento é obrigatório")
+    @NotNull(message = "O horário da Sessão é obrigatório")
     @Column(nullable = false)
-    private String documentType;
+    private Time sessionTime;
 
-    @NotNull(message = "A data do anexo é obrigatória")
+    @NotBlank(message = "O local da Sessão é obrigatório")
     @Column(nullable = false)
-    private Date attachmentDate;
+    private String sessionLocation;
 
-    @NotBlank(message = "O caminho do arquivo é obrigatório")
+    @NotBlank(message = "A periodocidade da Sessão é obrigatório")
     @Column(nullable = false)
-    private String pathFile;
+    private String periodicity;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)

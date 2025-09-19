@@ -1,0 +1,271 @@
+Documentação da API - Sistema de Gestão CNAPNE
+
+Autenticação
+
+Todas as requisições para endpoints protegidos devem incluir um token JWT no cabeçalho de autorização.
+
+Header: Authorization: Bearer <seu_token_jwt>
+
+Para obter um token, utilize o endpoint de login:
+
+    Endpoint: POST /api/v1/auth/login
+
+    Corpo:
+    JSON
+
+    {
+      "email": "email@ifpr.edu.br",
+      "password": "sua_senha"
+    }
+
+Respostas de Erro Comuns statusCode
+
+Código Título Descrição
+400 Bad Request A requisição está mal formatada ou faltam dados obrigatórios (ex: validação de DTO falhou).
+401 Unauthorized O token de autenticação não foi fornecido ou é inválido.
+403 Forbidden O usuário está autenticado, mas não tem a permissão (Role) necessária para acessar o recurso.
+404 Not Found O recurso solicitado (ex: estudante com um ID específico) não foi encontrado.
+409 Conflict Conflito de dados. Geralmente, ao tentar criar um recurso com um e-mail ou matrícula que já existe.
+
+Profissionais
+
+Endpoints para o gerenciamento de profissionais do sistema.
+
+1. Criar um novo profissional
+
+/api/v1/professionals
+
+Cria um novo profissional. Retorna erro caso o e-mail já esteja em uso.
+
+    Autorização: COORDENACAO_CNAPNE
+
+    Corpo da Requisição:
+    JSON
+
+{
+"fullName": "Ana Silva",
+"email": "ana.silva@ifpr.edu.br",
+"password": "123456",
+"specialty": "Psicopedagoga",
+"role": "EQUIPE_AEE"
+}
+
+Exemplo de Resposta (201 Created):
+JSON
+
+    {
+      "id": "f7b8c182-45e2-4c60-9e6e-9a6c71e82f14",
+      "fullName": "Ana Silva",
+      "email": "ana.silva@ifpr.edu.br",
+      "specialty": "Psicopedagoga",
+      "role": "EQUIPE_AEE",
+      "active": true
+    }
+
+2. Listar todos os profissionais
+
+/api/v1/professionals
+
+Retorna uma lista de todos os profissionais cadastrados.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO
+
+    Exemplo de Resposta (200 OK):
+    JSON
+
+    [
+      {
+        "id": "f7b8c182-45e2-4c60-9e6e-9a6c71e82f14",
+        "fullName": "Ana Silva",
+        "email": "ana.silva@ifpr.edu.br",
+        "specialty": "Psicopedagoga",
+        "role": "EQUIPE_AEE",
+        "active": true
+      },
+      {
+        "id": "c5a3b5e9-7d1a-4f4a-9304-21e5efc0475b",
+        "fullName": "Carlos Oliveira",
+        "email": "carlos.oliveira@ifpr.edu.br",
+        "specialty": "Intérprete de Libras",
+        "role": "EQUIPE_ACOMPANHAMENTO",
+        "active": true
+      }
+    ]
+
+3. Buscar profissional por ID
+
+/api/v1/professionals/{id}
+
+Retorna os dados de um profissional específico pelo seu UUID.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO
+
+4. Atualizar um profissional
+
+/api/v1/professionals/{id}
+
+Atualiza os dados de um profissional já existente.
+
+    Autorização: COORDENACAO_CNAPNE
+
+    Corpo da Requisição:
+    JSON
+
+    {
+      "fullName": "Ana L. Silva",
+      "email": "ana.lsilva@ifpr.edu.br",
+      "specialty": "Psicopedagoga",
+      "role": "EQUIPE_AEE",
+      "active": true
+    }
+
+5. Deletar um profissional
+
+/api/v1/professionals/{id}
+
+Remove um profissional do sistema permanentemente.
+
+    Autorização: COORDENACAO_CNAPNE
+
+Estudantes
+
+Endpoints para o gerenciamento de estudantes.
+
+1. Criar um novo estudante
+
+/api/v1/students
+
+Cria um novo estudante. Retorna erro caso matrícula ou e-mail já estejam em uso.
+
+    Nota: Se o estudante for menor de 18 anos, é obrigatório o envio de pelo menos um responsável no array responsibles.
+
+    Autorização: COORDENACAO_CNAPNE
+
+    Corpo da Requisição:
+    JSON
+
+    {
+      "completeName": "João Pedro da Silva",
+      "email": "joao.silva@ifpr.edu.br",
+      "password": "123456",
+      "registration": "2025A001",
+      "team": "3ºA",
+      "birthDate": "2008-05-10",
+      "phone": "(42) 99999-1234",
+      "gender": "Masculino",
+      "ethnicity": "Pardo",
+      "responsibles": [
+        {
+          "completeName": "Maria da Silva",
+          "email": "maria.silva@gmail.com",
+          "phone": "(42) 98888-1234",
+          "kinship": "Mãe"
+        }
+      ]
+    }
+
+2. Listar todos os estudantes
+
+/api/v1/students
+
+Retorna uma lista resumida de todos os estudantes cadastrados.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO
+
+    Exemplo de Resposta (200 OK):
+    JSON
+
+    [
+      {
+        "id": "2e14f8c3-58f1-4d3d-b7aa-8f6a3c442f91",
+        "completeName": "João Pedro da Silva",
+        "email": "joao.silva@ifpr.edu.br",
+        "registration": "2025A001",
+        "team": "3ºA",
+        "status": "ATIVO"
+      }
+    ]
+
+3. Buscar estudante por ID
+
+/api/v1/students/{id}
+
+Retorna os dados completos de um estudante específico.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO
+
+4. Atualizar um estudante
+
+/api/v1/students/{id}
+
+Atualiza os dados de um estudante já existente.
+
+    Autorização: COORDENACAO_CNAPNE
+
+5. Deletar um estudante
+
+/api/v1/students/{id}
+
+Remove um estudante do sistema.
+
+    Autorização: COORDENACAO_CNAPNE
+
+Documentos
+
+Endpoints para gerenciar os documentos dos estudantes.
+
+1. Upload de documento
+
+/api/v1/students/{studentId}/documents
+
+Faz o upload de um documento para um estudante. A requisição deve ser do tipo multipart/form-data.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO
+
+    Corpo da Requisição:
+
+        file: O arquivo binário.
+
+        documentType: Uma string com o tipo do documento (ex: "Laudo Médico").
+
+2. Listar documentos de um estudante
+
+/api/v1/students/{studentId}/documents
+
+Retorna todos os documentos anexados a um estudante.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO, ESTUDANTE (para seus próprios documentos).
+
+    Exemplo de Resposta (200 OK):
+    JSON
+
+    [
+      {
+        "id": "e6d1c89f-96b2-4c4d-a7cb-5a21c1c0b632",
+        "fileName": "laudo_medico.pdf",
+        "documentType": "Laudo Médico",
+        "attachmentDate": "2025-09-07T10:30:45.123Z"
+      }
+    ]
+
+3. Baixar ou visualizar documento
+
+/api/v1/students/{studentId}/documents/{docId}
+
+Recupera um documento específico.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO, ESTUDANTE (para seus próprios documentos).
+
+    Query Params (Opcional):
+
+        disposition=inline: Tenta exibir o arquivo no navegador.
+
+        disposition=attachment (padrão): Força o download do arquivo.
+
+4. Deletar documento
+
+/api/v1/students/{studentId}/documents/{docId}
+
+Exclui um documento do banco e do sistema de arquivos.
+
+    Autorização: COORDENACAO_CNAPNE, EQUIPE_AEE, EQUIPE_ACOMPANHAMENTO

@@ -31,7 +31,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "app_user")
+@Table(name = "app_users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User implements UserDetails {
 

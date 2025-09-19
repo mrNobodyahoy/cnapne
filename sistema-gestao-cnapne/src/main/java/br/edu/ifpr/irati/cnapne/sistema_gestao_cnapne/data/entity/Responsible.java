@@ -23,7 +23,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "responsible")
+@Table(name = "responsibles")
 public class Responsible {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) 

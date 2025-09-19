@@ -2,7 +2,6 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -54,9 +53,7 @@ public class StudentService {
             throw new DataIntegrityViolationException("O email '" + dto.email() + "' já está em uso.");
         });
 
-        LocalDate birthDate = dto.birthDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        int age = Period.between(birthDate, LocalDate.now()).getYears();
-
+        int age = Period.between(dto.birthDate(), LocalDate.now()).getYears();
         if (age < 18 && (dto.responsibles() == null || dto.responsibles().isEmpty())) {
             throw new IllegalArgumentException(
                     "Estudantes menores de 18 anos devem ter pelo menos um responsável cadastrado.");
@@ -170,12 +167,12 @@ public class StudentService {
         }
 
         return students.stream()
-            .map(s -> new ReadStudentSummaryDTO(
-                    s.getId(),
-                    s.getCompleteName(),
-                    s.getRegistration(),
-                    s.getTeam(),
-                    s.getStatus())) 
-            .collect(Collectors.toList());
+                .map(s -> new ReadStudentSummaryDTO(
+                        s.getId(),
+                        s.getCompleteName(),
+                        s.getRegistration(),
+                        s.getTeam(),
+                        s.getStatus()))
+                .collect(Collectors.toList());
     }
 }

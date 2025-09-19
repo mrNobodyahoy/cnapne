@@ -38,29 +38,20 @@ public class DocumentService {
         Path uploadPath = Paths.get(uploadDir);
         Files.createDirectories(uploadPath);
 
-        // ===== INÍCIO DA ALTERAÇÃO =====
-
-        // 1. Obter o nome e a extensão originais do arquivo de forma segura
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
         String extension = StringUtils.getFilenameExtension(originalFilename);
 
-        // 2. Gerar um nome de arquivo único e aleatório usando UUID
         String uniqueFilename = UUID.randomUUID().toString() + "." + extension;
 
-        // 3. Criar o caminho final no servidor com o NOME ÚNICO
         Path filePath = uploadPath.resolve(uniqueFilename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         Document doc = new Document();
-        // 4. Salvar o NOME ORIGINAL no banco de dados (para exibição)
         doc.setFileName(originalFilename);
         doc.setDocumentType(documentType);
         doc.setAttachmentDate(new Date());
-        // 5. Salvar o CAMINHO COMPLETO COM O NOME ÚNICO no banco de dados
         doc.setPathFile(filePath.toString());
         doc.setStudent(student);
-
-        // ===== FIM DA ALTERAÇÃO =====
 
         Document saved = documentRepository.save(doc);
 
