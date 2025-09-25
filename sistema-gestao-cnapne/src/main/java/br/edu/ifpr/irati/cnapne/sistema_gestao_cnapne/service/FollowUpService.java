@@ -1,11 +1,15 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service; // --- CORREÇÃO: Adicionada a anotação @Service
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
@@ -89,13 +93,6 @@ public class FollowUpService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadFollowUpDTO> getAllFollowUps() {
-        return followUpRepository.findAll().stream()
-                .map(ReadFollowUpDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public ReadFollowUpDTO getFollowUpById(UUID id) {
         FollowUp followUp = followUpRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Acompanhamento não encontrado com ID: " + id));
@@ -154,14 +151,14 @@ public class FollowUpService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadFollowUpDTO> getFollowUpByProfessional(UUID professional_id) {
+    public Page<ReadFollowUpDTO> findAllPaginated(UUID studentId, UUID professionalId, String status,
+            LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<FollowUp> spec = Specification
+                .where(FollowUpSpecification.hasStudent(studentId))
+                .and(FollowUpSpecification.hasProfessional(professionalId))
+                .and(FollowUpSpecification.hasStatus(status))
+                .and(FollowUpSpecification.sessionDateIsBetween(startDate, endDate));
 
-        if (!professionalRepository.existsById(professional_id)) {
-            throw new ResourceNotFoundException("Profissional não encontrado " + professional_id);
-        }
-
-        List<FollowUp> followUps = followUpRepository.findByProfessionalsId(professional_id);
-
-        return followUps.stream().map(ReadFollowUpDTO::new).collect(Collectors.toList());
+        return followUpRepository.findAll(spec, pageable).map(ReadFollowUpDTO::new);
     }
 }

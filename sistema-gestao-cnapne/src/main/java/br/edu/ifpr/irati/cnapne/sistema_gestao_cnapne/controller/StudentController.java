@@ -1,8 +1,10 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.controller;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -56,8 +58,13 @@ public class StudentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ReadStudentDTO>> getAllStudent() {
-        return ResponseEntity.ok(studentService.getAllStudents());
+    public ResponseEntity<Page<ReadStudentSummaryDTO>> getAllStudents(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false, defaultValue = "ALL") String status,
+            @PageableDefault(size = 10, sort = "completeName") Pageable pageable) {
+
+        Page<ReadStudentSummaryDTO> students = studentService.findAllPaginatedAndFiltered(query, status, pageable);
+        return ResponseEntity.ok(students);
     }
 
     @GetMapping("/{id}")
@@ -77,18 +84,6 @@ public class StudentController {
     public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build(); // 204
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<ReadStudentSummaryDTO>> search(@RequestParam String query) {
-        return ResponseEntity.ok(studentService.search(query));
-    }
-
-    @Operation(summary = "Filtrar estudantes por status", description = "Retorna uma lista de estudantes com base em um status específico (ex: 'ATIVO' ou 'INATIVO').")
-    @GetMapping("/filter")
-    public ResponseEntity<List<ReadStudentSummaryDTO>> getStudentsByStatus(@RequestParam String status) {
-        List<ReadStudentSummaryDTO> students = studentService.findByStatus(status);
-        return ResponseEntity.ok(students);
     }
 
     @GetMapping("/me")

@@ -3,10 +3,10 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,14 +94,6 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadStudentDTO> getAllStudents() {
-        return studentRepository.findAll()
-                .stream()
-                .map(ReadStudentDTO::new)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public ReadStudentDTO getStudentById(UUID id) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
@@ -142,37 +134,26 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadStudentSummaryDTO> findByStatus(String status) {
-        List<Student> students = studentRepository.findByStatus(status);
+    public Page<ReadStudentSummaryDTO> findAllPaginatedAndFiltered(String query, String status, Pageable pageable) {
+        Page<Student> studentPage;
+        final String searchQuery = (query == null) ? "" : query;
+        final boolean hasStatusFilter = (status != null && !status.equalsIgnoreCase("ALL"));
 
-        return students.stream()
-                .map(s -> new ReadStudentSummaryDTO(
-                        s.getId(),
-                        s.getCompleteName(),
-                        s.getRegistration(),
-                        s.getTeam(),
-                        s.getStatus()))
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<ReadStudentSummaryDTO> search(String query) {
-        final String isNumericRegex = "^\\d+$";
-
-        List<Student> students;
-        if (query.matches(isNumericRegex)) {
-            students = studentRepository.findByRegistrationContainingIgnoreCase(query);
+        if (hasStatusFilter) {
+            studentPage = studentRepository
+                    .findByStatusAndCompleteNameStartingWithIgnoreCaseOrStatusAndRegistrationContainingIgnoreCase(
+                            status, searchQuery, status, searchQuery, pageable);
         } else {
-            students = studentRepository.findByCompleteNameContainingIgnoreCase(query);
+            studentPage = studentRepository.findByCompleteNameStartingWithIgnoreCaseOrRegistrationContainingIgnoreCase(
+                    searchQuery, searchQuery, pageable);
         }
 
-        return students.stream()
-                .map(s -> new ReadStudentSummaryDTO(
-                        s.getId(),
-                        s.getCompleteName(),
-                        s.getRegistration(),
-                        s.getTeam(),
-                        s.getStatus()))
-                .collect(Collectors.toList());
+        return studentPage.map(s -> new ReadStudentSummaryDTO(
+                s.getId(),
+                s.getCompleteName(),
+                s.getRegistration(),
+                s.getTeam(),
+                s.getStatus()));
     }
+
 }

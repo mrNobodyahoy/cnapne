@@ -1,5 +1,8 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
@@ -11,9 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.List;
-import java.util.ArrayList;
 
 @Getter
 @Setter

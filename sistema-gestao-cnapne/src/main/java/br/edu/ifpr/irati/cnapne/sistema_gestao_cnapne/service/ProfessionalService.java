@@ -1,9 +1,10 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,12 +42,12 @@ public class ProfessionalService {
 
     @Transactional
     public ReadProfessionalDTO createProfessional(CreateProfessionalDTO dto) {
-        if (userRepository.findByEmail(dto.email()).isPresent()) {
+        userRepository.findByEmail(dto.email()).ifPresent(user -> {
             throw new DataIntegrityViolationException("O e-mail já está em uso.");
-        }
+        });
 
         Profile profile = profileRepository.findByName(Role.valueOf(dto.role()))
-                .orElseThrow(() -> new RuntimeException("Perfil " + dto.role() + " não encontrado."));
+                .orElseThrow(() -> new DataNotFoundException("Perfil " + dto.role() + " não encontrado."));
 
         Professional professional = new Professional();
         professional.setEmail(dto.email());
@@ -60,60 +61,23 @@ public class ProfessionalService {
         return new ReadProfessionalDTO(saved);
     }
 
-    // --- LÓGICA DE BUSCA E FILTRO ALTERADA ---
-
-    /**
-     * Retorna todos os profissionais sem filtro.
-     */
     @Transactional(readOnly = true)
-    public List<ReadProfessionalDTO> getAllProfessionals() {
-        return professionalRepository.findAll()
-                .stream()
-                .map(ReadProfessionalDTO::new)
-                .toList();
-    }
+    public Page<ReadProfessionalDTO> findAllPaginatedAndFiltered(
+            String query, Boolean active, Role role, Pageable pageable) {
 
-    /**
-     * Lógica de busca principal, similar ao search() de StudentService.
-     * Busca profissionais pelo nome completo.
-     */
-    @Transactional(readOnly = true)
-    public List<ReadProfessionalDTO> search(String query) {
-        List<Professional> professionals = professionalRepository.findByFullNameContainingIgnoreCase(query);
-        return professionals.stream()
-                .map(ReadProfessionalDTO::new)
-                .collect(Collectors.toList());
-    }
+        Specification<Professional> spec = ProfessionalSpecification.hasFullName(query)
+                .and(ProfessionalSpecification.isActive(active))
+                .and(ProfessionalSpecification.hasRole(role));
 
-    /**
-     * Lógica de filtro por status, similar ao findByStatus() de StudentService.
-     */
-    @Transactional(readOnly = true)
-    public List<ReadProfessionalDTO> findByActive(boolean active) {
-        List<Professional> professionals = professionalRepository.findByActive(active);
-        return professionals.stream()
-                .map(ReadProfessionalDTO::new)
-                .collect(Collectors.toList());
-    }
+        Page<Professional> professionalPage = professionalRepository.findAll(spec, pageable);
 
-    /**
-     * Lógica de filtro por perfil/cargo.
-     */
-    @Transactional(readOnly = true)
-    public List<ReadProfessionalDTO> findByRole(Role role) {
-        List<Professional> professionals = professionalRepository.findByProfileName(role);
-        return professionals.stream()
-                .map(ReadProfessionalDTO::new)
-                .collect(Collectors.toList());
+        return professionalPage.map(ReadProfessionalDTO::new);
     }
-    
-    // --- FIM DA LÓGICA ALTERADA ---
-
 
     @Transactional(readOnly = true)
     public ReadProfessionalDTO getProfessionalById(UUID id) {
         Professional professional = professionalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Profissional não encontrado com ID: " + id));
+                .orElseThrow(() -> new DataNotFoundException("Profissional não encontrado com ID: " + id));
         return new ReadProfessionalDTO(professional);
     }
 
@@ -144,8 +108,7 @@ public class ProfessionalService {
     @Transactional
     public void deleteProfessional(UUID id) {
         Professional professional = professionalRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Profissional não encontrado com ID: " + id));
+                .orElseThrow(() -> new DataNotFoundException("Profissional não encontrado com ID: " + id));
         professionalRepository.delete(professional);
     }
-
 }

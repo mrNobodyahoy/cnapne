@@ -1,18 +1,15 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository;
 
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor; // Importar
+import org.springframework.stereotype.Repository;
+
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
+
 @Repository
-public interface ServiceRepository extends JpaRepository<Service, UUID> {
-
-    List<Service> findByStudentId(UUID studentId);
-
-    List<Service> findByStudentCompleteNameContainingIgnoreCase(String studentName);
-
-    List<Service> findByProfessionalsId(UUID professionalId);
-
+public interface ServiceRepository extends JpaRepository<Service, UUID>, JpaSpecificationExecutor<Service> {
+    // A interface fica limpa. Os métodos antigos de busca por lista não são mais
+    // necessários.
 }

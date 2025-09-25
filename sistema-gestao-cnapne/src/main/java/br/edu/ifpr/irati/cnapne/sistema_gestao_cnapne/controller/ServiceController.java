@@ -1,9 +1,12 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.controller;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.CreateServiceDTO;
@@ -38,12 +42,6 @@ public class ServiceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedService);
     }
 
-    @GetMapping
-    public ResponseEntity<List<ReadServiceDTO>> listarAtendimentos() {
-        List<ReadServiceDTO> atendimentos = atendimentoService.getAllServices();
-        return ResponseEntity.ok(atendimentos);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<ReadServiceDTO> buscarAtendimentoPorId(@PathVariable UUID id) {
         ReadServiceDTO atendimento = atendimentoService.getServiceById(id);
@@ -64,10 +62,18 @@ public class ServiceController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/professional/{professionalId}")
-    public ResponseEntity<List<ReadServiceDTO>> listarAtendimentosPorProfissional(@PathVariable UUID professionalId) {
-        List<ReadServiceDTO> services = atendimentoService.getServiceByProfessional(professionalId);
-        return ResponseEntity.ok(services);
+    @GetMapping
+    public ResponseEntity<Page<ReadServiceDTO>> listarAtendimentos(
+            @RequestParam(required = false) UUID studentId,
+            @RequestParam(required = false) UUID professionalId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @PageableDefault(size = 10, sort = "sessionDate") Pageable pageable) {
+
+        Page<ReadServiceDTO> atendimentos = atendimentoService.findAllPaginated(studentId, professionalId, status,
+                startDate, endDate, pageable);
+        return ResponseEntity.ok(atendimentos);
     }
 
 }

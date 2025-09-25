@@ -1,11 +1,15 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.CreateServiceDTO;
@@ -90,11 +94,6 @@ public class AtendimentoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadServiceDTO> getAllServices() {
-        return serviceRepository.findAll().stream().map(ReadServiceDTO::new).toList();
-    }
-
-    @Transactional(readOnly = true)
     public ReadServiceDTO getServiceById(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Atendimento não encontrado com ID: " + id));
@@ -140,6 +139,18 @@ public class AtendimentoService {
         return new ReadServiceDTO(updatedService);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ReadServiceDTO> findAllPaginated(UUID studentId, UUID professionalId, String status,
+            LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<Service> spec = Specification
+                .where(ServiceSpecification.hasStudent(studentId))
+                .and(ServiceSpecification.hasProfessional(professionalId))
+                .and(ServiceSpecification.hasStatus(status))
+                .and(ServiceSpecification.sessionDateIsBetween(startDate, endDate));
+
+        return serviceRepository.findAll(spec, pageable).map(ReadServiceDTO::new);
+    }
+
     @Transactional
     public void delete(UUID id) {
 
@@ -153,15 +164,4 @@ public class AtendimentoService {
         serviceRepository.delete(existingService);
     }
 
-    @Transactional(readOnly = true)
-    public List<ReadServiceDTO> getServiceByProfessional(UUID professional_id) {
-
-        if (!professionalRepository.existsById(professional_id)) {
-            throw new ResourceNotFoundException("Profissional não encontrado " + professional_id);
-        }
-
-        List<Service> services = serviceRepository.findByProfessionalsId(professional_id);
-
-        return services.stream().map(ReadServiceDTO::new).collect(Collectors.toList());
-    }
 }
