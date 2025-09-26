@@ -11,15 +11,14 @@ public record ReadProfessionalDTO(
         String specialty,
         String role,
         boolean active) {
-    
+
     public ReadProfessionalDTO(Professional professional) {
         this(
-            professional.getId(),         
-            professional.getEmail(),
-            professional.getFullName(),
-            professional.getSpecialty(),
-            professional.getProfile().getName().name(),
-            professional.isActive()
-        );
+                professional.getId(),
+                professional.getEmail(),
+                professional.getFullName(),
+                professional.getSpecialty(),
+                professional.getProfile().getName().name(),
+                professional.isActive());
     }
 }

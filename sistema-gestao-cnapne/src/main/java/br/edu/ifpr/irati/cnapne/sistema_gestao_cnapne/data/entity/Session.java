@@ -47,10 +47,6 @@ public class Session {
     @Column(nullable = false)
     private String sessionLocation;
 
-    @NotBlank(message = "A periodocidade da Sessão é obrigatório")
-    @Column(nullable = false)
-    private String periodicity;
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -51,12 +51,14 @@ public class FollowUpService {
         newFollowUp.setSessionDate(createDto.getSessionDate());
         newFollowUp.setSessionTime(createDto.getSessionTime());
         newFollowUp.setSessionLocation(createDto.getSessionLocation());
-        newFollowUp.setPeriodicity(createDto.getPeriodicity());
         newFollowUp.setStatus(createDto.getStatus());
         newFollowUp.setDescription(createDto.getDescription());
         newFollowUp.setTasks(createDto.getTasks());
         newFollowUp.setStudent(student);
         newFollowUp.setProfessionals(professionals);
+
+        // ADICIONADO: Mapeamento dos novos campos
+        newFollowUp.setAreasCovered(createDto.getAreasCovered());
 
         for (Professional prof : professionals) {
             prof.getFollowUps().add(newFollowUp);
@@ -70,11 +72,12 @@ public class FollowUpService {
         responseDTO.setSessionDate(savedFollowUp.getSessionDate());
         responseDTO.setSessionTime(savedFollowUp.getSessionTime());
         responseDTO.setSessionLocation(savedFollowUp.getSessionLocation());
-        responseDTO.setPeriodicity(savedFollowUp.getPeriodicity());
         responseDTO.setStatus(savedFollowUp.getStatus());
-
         responseDTO.setDescription(savedFollowUp.getDescription());
         responseDTO.setTasks(savedFollowUp.getTasks());
+
+        // ADICIONADO: Mapeamento dos novos campos na resposta
+        responseDTO.setAreasCovered(savedFollowUp.getAreasCovered());
 
         ReadStudentSummaryDTO studentDto = new ReadStudentSummaryDTO(
                 savedFollowUp.getStudent().getId(),
@@ -117,11 +120,14 @@ public class FollowUpService {
         existingFollowUp.setSessionDate(updateDto.getSessionDate());
         existingFollowUp.setSessionTime(updateDto.getSessionTime());
         existingFollowUp.setSessionLocation(updateDto.getSessionLocation());
-        existingFollowUp.setPeriodicity(updateDto.getPeriodicity());
         existingFollowUp.setStatus(updateDto.getStatus());
         existingFollowUp.setTasks(updateDto.getTasks());
         existingFollowUp.setStudent(student);
         existingFollowUp.setDescription(updateDto.getDescription());
+
+        // ADICIONADO: Mapeamento dos novos campos
+        existingFollowUp.setAreasCovered(updateDto.getAreasCovered());
+        existingFollowUp.setNextSteps(updateDto.getNextSteps());
 
         for (Professional prof : existingFollowUp.getProfessionals()) {
             prof.getFollowUps().remove(existingFollowUp);

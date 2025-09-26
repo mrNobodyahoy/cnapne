@@ -90,11 +90,9 @@ public class DataSeeder implements CommandLineRunner {
 
         if (studentRepository.count() < 30) {
             System.out.println("--- Criando Estudantes ---");
-            // ✨ ALTERADO DE 20 PARA 30
             for (int i = 1; i <= 30; i++) {
                 String email = "aluno" + i + "@ifpr.edu.br";
                 if (userRepository.findByEmail(email).isEmpty()) {
-                    // ... (lógica de geração de nomes e dados do estudante) ...
                     String primeiroNome;
                     String genero;
                     if (i % 2 == 0) {
@@ -148,11 +146,9 @@ public class DataSeeder implements CommandLineRunner {
             todosNomes.addAll(nomesFemininos);
             todosNomes.addAll(nomesMasculinos);
 
-            // ✨ ALTERADO DE 20 PARA 30
             for (int i = 1; i <= 30; i++) {
                 String email = "profissional" + i + "@ifpr.edu.br";
                 if (userRepository.findByEmail(email).isEmpty()) {
-                    // ... (lógica de geração de nomes e dados do profissional) ...
                     Role role = professionalRoles.get(i % professionalRoles.size());
                     Profile profProfile = profileRepository.findByName(role)
                             .orElseThrow(() -> new RuntimeException("Perfil " + role + " não encontrado."));
@@ -193,16 +189,25 @@ public class DataSeeder implements CommandLineRunner {
                 Student student = students.get(i % students.size());
                 Professional professional = professionals.get(i % professionals.size());
 
+                String status = statuses.get(i % statuses.size());
+
                 atendimento.setStudent(student);
                 atendimento.setProfessionals(Collections.singletonList(professional));
                 atendimento.setSessionDate(LocalDate.now().minusDays(i * 3));
                 atendimento.setSessionTime(Time.valueOf(10 + (i % 8) + ":00:00"));
                 atendimento.setSessionLocation(locations.get(i % locations.size()));
-                atendimento.setPeriodicity("Semanal");
-                atendimento.setStatus(statuses.get(i % statuses.size()));
+                atendimento.setStatus(status);
                 atendimento.setTypeService(serviceTypes.get(i % serviceTypes.size()));
                 atendimento.setDescriptionService("Descrição do atendimento para o aluno " + student.getCompleteName());
                 atendimento.setTasks("Tarefas definidas na sessão de " + atendimento.getTypeService() + ".");
+
+                // ADICIONADO: Preenchimento dos novos campos
+                atendimento.setObjectives(
+                        "Objetivo do " + atendimento.getTypeService() + " para " + student.getCompleteName());
+                if ("REALIZADO".equals(status)) {
+                    atendimento.setResults("Resultados positivos foram observados durante a sessão.");
+                }
+
                 serviceRepository.save(atendimento);
             }
         }
@@ -211,7 +216,8 @@ public class DataSeeder implements CommandLineRunner {
         if (followUpRepository.count() == 0) {
             System.out.println("--- Criando Acompanhamentos ---");
             List<String> locations = List.of("Sala de Reuniões", "Online", "Pátio");
-            List<String> statuses = List.of("EM_ANDAMENTO", "CONCLUIDO");
+            List<String> statuses = List.of("REALIZADO", "AGENDADO"); // Ajustado para corresponder ao front-end
+            List<String> areas = List.of("Pedagógica", "Psicossocial", "Familiar", "Adaptação Curricular");
 
             for (int i = 0; i < 20; i++) {
                 FollowUp acompanhamento = new FollowUp();
@@ -219,16 +225,24 @@ public class DataSeeder implements CommandLineRunner {
                 Professional professional1 = professionals.get(i % professionals.size());
                 Professional professional2 = professionals.get((i + 1) % professionals.size());
 
+                String status = statuses.get(i % statuses.size());
+
                 acompanhamento.setStudent(student);
                 acompanhamento.setProfessionals(Arrays.asList(professional1, professional2));
                 acompanhamento.setSessionDate(LocalDate.now().minusDays(i * 5));
                 acompanhamento.setSessionTime(Time.valueOf(13 + (i % 4) + ":30:00"));
                 acompanhamento.setSessionLocation(locations.get(i % locations.size()));
-                acompanhamento.setPeriodicity("Quinzenal");
-                acompanhamento.setStatus(statuses.get(i % statuses.size()));
+                acompanhamento.setStatus(status);
                 acompanhamento
                         .setDescription("Descrição do acompanhamento geral do aluno " + student.getCompleteName());
                 acompanhamento.setTasks("Verificar progresso das atividades anteriores.");
+
+                // ADICIONADO: Preenchimento dos novos campos
+                acompanhamento.setAreasCovered(areas.get(i % areas.size()));
+                if ("REALIZADO".equals(status)) {
+                    acompanhamento.setNextSteps("Definir novas estratégias para o próximo bimestre.");
+                }
+
                 followUpRepository.save(acompanhamento);
             }
         }

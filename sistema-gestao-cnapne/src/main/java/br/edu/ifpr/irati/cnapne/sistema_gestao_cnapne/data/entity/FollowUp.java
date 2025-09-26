@@ -5,6 +5,7 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -26,9 +27,18 @@ import lombok.ToString;
 public class FollowUp extends Session {
 
     @NotBlank(message = "A descrição do acompanhamento é obrigatório")
+    @Lob
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = true)
+    private String areasCovered;
+
+    @Lob
+    @Column(nullable = true)
+    private String nextSteps;
+
+    @Lob
     @Column(nullable = false)
     private String tasks;
 

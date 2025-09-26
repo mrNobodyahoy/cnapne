@@ -22,10 +22,15 @@ public class ReadFollowUpDTO {
     private LocalDate sessionDate;
     private Time sessionTime;
     private String sessionLocation;
-    private String periodicity;
+    // Removido: private String periodicity;
     private String status;
     private String description;
     private String tasks;
+
+    // Campos Adicionados
+    private String areasCovered;
+    private String nextSteps;
+
     private ReadStudentSummaryDTO student;
     private List<ReadProfessionalDTO> professionals;
 
@@ -35,10 +40,11 @@ public class ReadFollowUpDTO {
         this.sessionDate = followUp.getSessionDate();
         this.sessionTime = followUp.getSessionTime();
         this.sessionLocation = followUp.getSessionLocation();
-        this.periodicity = followUp.getPeriodicity();
         this.status = followUp.getStatus();
         this.description = followUp.getDescription();
         this.tasks = followUp.getTasks();
+        this.areasCovered = followUp.getAreasCovered(); // Adicionado
+        this.nextSteps = followUp.getNextSteps(); // Adicionado
 
         if (followUp.getStudent() != null) {
             this.student = new ReadStudentSummaryDTO(

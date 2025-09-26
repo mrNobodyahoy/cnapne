@@ -37,7 +37,8 @@ public class DocumentController {
     }
 
     @PostMapping
-    public ResponseEntity<ReadDocumentDTO> uploadDocument(@PathVariable UUID studentId, @RequestParam("file") MultipartFile file, @RequestParam("type") String documentType) throws IOException {
+    public ResponseEntity<ReadDocumentDTO> uploadDocument(@PathVariable UUID studentId,
+            @RequestParam("file") MultipartFile file, @RequestParam("type") String documentType) throws IOException {
         ReadDocumentDTO saved = documentService.uploadDocument(studentId, file, documentType);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -47,15 +48,14 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.getDocumentsByStudent(studentId));
     }
 
-    // MÉTODO ÚNICO E OTIMIZADO PARA PEGAR O ARQUIVO
     @GetMapping("/{docId}")
     public ResponseEntity<Resource> getDocument(
             @PathVariable UUID studentId,
             @PathVariable UUID docId,
             @RequestParam(value = "disposition", defaultValue = "inline") String disposition) {
-        
+
         Document doc = documentService.getDocumentByIdAndStudentId(docId, studentId);
-        
+
         try {
             Path filePath = Paths.get(doc.getPathFile());
             Resource resource = new UrlResource(filePath.toUri());
@@ -65,12 +65,13 @@ public class DocumentController {
                 if (contentType == null) {
                     contentType = "application/octet-stream";
                 }
-                
+
                 String validDisposition = "attachment".equalsIgnoreCase(disposition) ? "attachment" : "inline";
 
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, validDisposition + "; filename=\"" + resource.getFilename() + "\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION,
+                                validDisposition + "; filename=\"" + resource.getFilename() + "\"")
                         .body(resource);
             } else {
                 throw new RuntimeException("Não foi possível ler o arquivo!");

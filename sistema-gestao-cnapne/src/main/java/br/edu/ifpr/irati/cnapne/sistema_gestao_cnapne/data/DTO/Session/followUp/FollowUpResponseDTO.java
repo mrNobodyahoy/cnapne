@@ -19,11 +19,15 @@ public class FollowUpResponseDTO {
     private LocalDate sessionDate;
     private Time sessionTime;
     private String sessionLocation;
-    private String periodicity;
+    // Removido: private String periodicity;
     private String status;
 
     private String description;
     private String tasks;
+
+    // Campos Adicionados
+    private String areasCovered;
+    private String nextSteps;
 
     private ReadStudentSummaryDTO student;
     private List<ReadProfessionalDTO> professionals;

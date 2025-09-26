@@ -14,11 +14,9 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 
-
 @Service
 public class JwtService {
 
-    // Injeta a chave secreta do seu application.properties
     @Value("${api.security.token.secret}")
     private String secret;
 
@@ -26,30 +24,28 @@ public class JwtService {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("CNAPNE API") 
-                    .withSubject(user.getEmail()) 
-                    .withExpiresAt(getExpirationDate()) 
-                    .sign(algorithm); 
+                    .withIssuer("CNAPNE API")
+                    .withSubject(user.getEmail())
+                    .withExpiresAt(getExpirationDate())
+                    .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token JWT", exception);
         }
     }
 
-   
     public String validateToken(String tokenJWT) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
                     .withIssuer("CNAPNE API")
                     .build()
-                    .verify(tokenJWT) 
-                    .getSubject(); 
+                    .verify(tokenJWT)
+                    .getSubject();
         } catch (JWTVerificationException exception) {
             return "Token Invalido";
         }
     }
 
-  
     private Instant getExpirationDate() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }

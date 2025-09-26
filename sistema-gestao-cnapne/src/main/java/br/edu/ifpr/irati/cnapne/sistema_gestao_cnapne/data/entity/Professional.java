@@ -40,4 +40,5 @@ public class Professional extends User {
     @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "professional_followups", joinColumns = @JoinColumn(name = "professional_id"), inverseJoinColumns = @JoinColumn(name = "followup_id"))
     private List<FollowUp> followUps = new ArrayList<>();
+
 }

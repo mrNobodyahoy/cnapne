@@ -11,8 +11,10 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.Read
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class ReadServiceDTO {
 
     private UUID sessionId;
@@ -20,12 +22,15 @@ public class ReadServiceDTO {
     private LocalDate sessionDate;
     private Time sessionTime;
     private String sessionLocation;
-    private String periodicity;
+    // Removido: private String periodicity;
     private String status;
-
     private String typeService;
     private String descriptionService;
     private String tasks;
+
+    // Campos Adicionados
+    private String objectives;
+    private String results;
 
     private ReadStudentSummaryDTO student;
     private List<ReadProfessionalDTO> professionals;
@@ -36,11 +41,12 @@ public class ReadServiceDTO {
         this.sessionDate = service.getSessionDate();
         this.sessionTime = service.getSessionTime();
         this.sessionLocation = service.getSessionLocation();
-        this.periodicity = service.getPeriodicity();
         this.status = service.getStatus();
         this.typeService = service.getTypeService();
         this.descriptionService = service.getDescriptionService();
         this.tasks = service.getTasks();
+        this.objectives = service.getObjectives(); // Adicionado
+        this.results = service.getResults(); // Adicionado
 
         if (service.getStudent() != null) {
             this.student = new ReadStudentSummaryDTO(

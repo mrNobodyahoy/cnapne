@@ -25,7 +25,6 @@ public class FollowUpSpecification {
     }
 
     public static Specification<FollowUp> sessionDateIsBetween(LocalDate startDate, LocalDate endDate) {
-        // A lógica é idêntica à do ServiceSpecification
         return (root, query, cb) -> {
             if (startDate == null && endDate == null)
                 return cb.conjunction();

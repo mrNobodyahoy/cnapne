@@ -22,8 +22,7 @@ public class CreateFollowUpDTO {
     @NotBlank(message = "O local da Sessão é obrigatório")
     private String sessionLocation;
 
-    @NotBlank(message = "A periodicidade da Sessão é obrigatória")
-    private String periodicity;
+    // Removido: private String periodicity;
 
     @NotBlank(message = "O status da Sessão é obrigatório")
     private String status;
@@ -33,6 +32,9 @@ public class CreateFollowUpDTO {
 
     @NotBlank(message = "A descrição do Acompanhamento é obrigatória")
     private String description;
+
+    // Campos Adicionados
+    private String areasCovered;
 
     @NotBlank(message = "As tarefas são obrigatórias")
     private String tasks;

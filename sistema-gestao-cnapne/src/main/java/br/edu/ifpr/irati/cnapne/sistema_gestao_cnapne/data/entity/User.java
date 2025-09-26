@@ -36,9 +36,9 @@ import lombok.Setter;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) 
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    
+
     @Email(message = "O formato do e-mail é inválido")
     @NotBlank
     @Column(unique = true, nullable = false)
@@ -56,9 +56,8 @@ public class User implements UserDetails {
     @JoinColumn(name = "perfil_id", nullable = false)
     private Profile profile;
 
-
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(this.profile);
     }
 
@@ -93,6 +92,6 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-    return this.email; 
+        return this.email;
     }
 }

@@ -19,14 +19,17 @@ public class ServiceResponseDTO {
     private LocalDate sessionDate;
     private Time sessionTime;
     private String sessionLocation;
-    private String periodicity;
+    // Removido: private String periodicity;
     private String status;
 
     private String typeService;
     private String descriptionService;
     private String tasks;
 
-    private ReadStudentSummaryDTO student;
+    // Campos Adicionados
+    private String objectives;
+    private String results;
 
+    private ReadStudentSummaryDTO student;
     private List<ReadProfessionalDTO> professionals;
 }

@@ -24,6 +24,5 @@ public record UpdateStudentDTO(
 
         @NotBlank(message = "A etnia é obrigatória.") String ethnicity,
 
-        // ADICIONE ESTA LINHA
         @NotBlank(message = "O status é obrigatório.") String status) {
 }

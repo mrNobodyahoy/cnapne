@@ -51,11 +51,11 @@ public class AtendimentoService {
         newService.setSessionDate(createDto.getSessionDate());
         newService.setSessionTime(createDto.getSessionTime());
         newService.setSessionLocation(createDto.getSessionLocation());
-        newService.setPeriodicity(createDto.getPeriodicity());
         newService.setStatus(createDto.getStatus());
         newService.setTypeService(createDto.getTypeService());
         newService.setDescriptionService(createDto.getDescriptionService());
         newService.setTasks(createDto.getTasks());
+        newService.setObjectives(createDto.getObjectives());
         newService.setStudent(student);
         newService.setProfessionals(professionals);
 
@@ -71,11 +71,13 @@ public class AtendimentoService {
         responseDTO.setSessionDate(savedService.getSessionDate());
         responseDTO.setSessionTime(savedService.getSessionTime());
         responseDTO.setSessionLocation(savedService.getSessionLocation());
-        responseDTO.setPeriodicity(savedService.getPeriodicity());
         responseDTO.setStatus(savedService.getStatus());
         responseDTO.setTypeService(savedService.getTypeService());
         responseDTO.setDescriptionService(savedService.getDescriptionService());
         responseDTO.setTasks(savedService.getTasks());
+
+        // ADICIONADO: Mapeamento dos novos campos na resposta
+        responseDTO.setObjectives(savedService.getObjectives());
 
         ReadStudentSummaryDTO studentDto = new ReadStudentSummaryDTO(
                 savedService.getStudent().getId(),
@@ -117,11 +119,12 @@ public class AtendimentoService {
         existingService.setSessionDate(updateDto.getSessionDate());
         existingService.setSessionTime(updateDto.getSessionTime());
         existingService.setSessionLocation(updateDto.getSessionLocation());
-        existingService.setPeriodicity(updateDto.getPeriodicity());
         existingService.setStatus(updateDto.getStatus());
         existingService.setTypeService(updateDto.getTypeService());
         existingService.setDescriptionService(updateDto.getDescriptionService());
         existingService.setTasks(updateDto.getTasks());
+        existingService.setObjectives(updateDto.getObjectives());
+        existingService.setResults(updateDto.getResults());
         existingService.setStudent(student);
 
         for (Professional prof : existingService.getProfessionals()) {

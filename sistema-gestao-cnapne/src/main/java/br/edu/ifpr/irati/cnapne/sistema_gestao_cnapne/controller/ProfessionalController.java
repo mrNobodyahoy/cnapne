@@ -34,19 +34,16 @@ public class ProfessionalController {
 
     private final ProfessionalService professionalService;
 
-    // A injeção do ProfessionalRepository foi removida, pois não é necessária aqui.
     public ProfessionalController(ProfessionalService professionalService) {
         this.professionalService = professionalService;
     }
 
-    // O método createProfessional continua igual.
     @PostMapping
     public ResponseEntity<ReadProfessionalDTO> createProfessional(@Valid @RequestBody CreateProfessionalDTO dto) {
         ReadProfessionalDTO created = professionalService.createProfessional(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // ✨ ESTE É O ENDPOINT CORRIGIDO PARA A LISTAGEM PAGINADA E FILTRADA
     @GetMapping
     public ResponseEntity<Page<ReadProfessionalDTO>> getAllProfessionals(
             @RequestParam(required = false) String query,
@@ -54,13 +51,11 @@ public class ProfessionalController {
             @RequestParam(required = false) Role role,
             @PageableDefault(size = 10, sort = "fullName") Pageable pageable) {
 
-        // O controller apenas chama o serviço e retorna a resposta.
         Page<ReadProfessionalDTO> professionals = professionalService.findAllPaginatedAndFiltered(query, active, role,
                 pageable);
         return ResponseEntity.ok(professionals);
     }
 
-    // Os demais métodos (getById, update, delete, etc.) continuam iguais.
     @GetMapping("/me")
     public ResponseEntity<ReadProfessionalDTO> getAuthenticatedProfessional(@AuthenticationPrincipal User userDetails) {
         UUID professionalId = userDetails.getId();

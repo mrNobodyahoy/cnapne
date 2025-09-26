@@ -5,6 +5,7 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -30,9 +31,19 @@ public class Service extends Session {
     private String typeService;
 
     @NotBlank(message = "A descrição do Atendimento é obrigatório")
+    @Lob
     @Column(nullable = false)
     private String descriptionService;
 
+    @Lob
+    @Column(nullable = true)
+    private String objectives;
+
+    @Lob
+    @Column(nullable = true)
+    private String results;
+
+    @Lob
     @Column(nullable = false)
     private String tasks;
 

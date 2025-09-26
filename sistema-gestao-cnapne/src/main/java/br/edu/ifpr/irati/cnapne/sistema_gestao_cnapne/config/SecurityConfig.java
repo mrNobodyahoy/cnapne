@@ -2,7 +2,6 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.config;
 
 import java.util.List;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-
 
 @Configuration
 @EnableWebSecurity
@@ -44,27 +41,24 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/students/me").hasRole("ESTUDANTE")
 
-                        // Documentos (sem alteração)
+                        // Documentos
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/*/documents/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/students/*/documents/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/documents/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/*/documents/**").permitAll()
 
-                        // Estudantes (demais rotas - sem alteração)
+                        // Estudantes
                         .requestMatchers(HttpMethod.POST, "/api/v1/students").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
 
-                        // Profissionais (COM A ALTERAÇÃO)
-                        // VVVV ADICIONE ESTA REGRA AQUI VVVV
+                        // Profissionais
                         .requestMatchers("/api/v1/professionals/me")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
-                        // Esta regra geral continua como estava, mas agora a regra do /me será lida
-                        // primeiro
-                        .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**") // Listar, Buscar, Filtrar
+                        .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/professionals")

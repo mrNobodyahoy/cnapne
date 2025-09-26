@@ -22,9 +22,6 @@ public class CreateServiceDTO {
     @NotBlank(message = "O local da Sessão é obrigatório")
     private String sessionLocation;
 
-    @NotBlank(message = "A periodicidade da Sessão é obrigatória")
-    private String periodicity;
-
     @NotBlank(message = "O status da Sessão é obrigatório")
     private String status;
 
@@ -36,6 +33,8 @@ public class CreateServiceDTO {
 
     @NotBlank(message = "A descrição do Atendimento é obrigatória")
     private String descriptionService;
+
+    private String objectives;
 
     @NotBlank(message = "As tarefas são obrigatórias")
     private String tasks;
