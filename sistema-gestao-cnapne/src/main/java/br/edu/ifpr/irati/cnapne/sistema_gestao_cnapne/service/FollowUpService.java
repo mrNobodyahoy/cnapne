@@ -1,15 +1,14 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
@@ -51,13 +50,12 @@ public class FollowUpService {
         newFollowUp.setSessionDate(createDto.getSessionDate());
         newFollowUp.setSessionTime(createDto.getSessionTime());
         newFollowUp.setSessionLocation(createDto.getSessionLocation());
-        newFollowUp.setStatus(createDto.getStatus());
+        newFollowUp.setStatus("AGENDADO");
         newFollowUp.setDescription(createDto.getDescription());
         newFollowUp.setTasks(createDto.getTasks());
         newFollowUp.setStudent(student);
         newFollowUp.setProfessionals(professionals);
 
-        // ADICIONADO: Mapeamento dos novos campos
         newFollowUp.setAreasCovered(createDto.getAreasCovered());
 
         for (Professional prof : professionals) {
@@ -76,7 +74,6 @@ public class FollowUpService {
         responseDTO.setDescription(savedFollowUp.getDescription());
         responseDTO.setTasks(savedFollowUp.getTasks());
 
-        // ADICIONADO: Mapeamento dos novos campos na resposta
         responseDTO.setAreasCovered(savedFollowUp.getAreasCovered());
 
         ReadStudentSummaryDTO studentDto = new ReadStudentSummaryDTO(
@@ -125,7 +122,6 @@ public class FollowUpService {
         existingFollowUp.setStudent(student);
         existingFollowUp.setDescription(updateDto.getDescription());
 
-        // ADICIONADO: Mapeamento dos novos campos
         existingFollowUp.setAreasCovered(updateDto.getAreasCovered());
         existingFollowUp.setNextSteps(updateDto.getNextSteps());
 
@@ -157,13 +153,9 @@ public class FollowUpService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ReadFollowUpDTO> findAllPaginated(UUID studentId, UUID professionalId, String status,
-            LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<FollowUp> spec = Specification
-                .where(FollowUpSpecification.hasStudent(studentId))
-                .and(FollowUpSpecification.hasProfessional(professionalId))
-                .and(FollowUpSpecification.hasStatus(status))
-                .and(FollowUpSpecification.sessionDateIsBetween(startDate, endDate));
+    public Page<ReadFollowUpDTO> findAllPaginated(String studentName, String status, Pageable pageable) {
+        Specification<FollowUp> spec = FollowUpSpecification.studentNameContains(studentName)
+                .and(FollowUpSpecification.hasStatus(status));
 
         return followUpRepository.findAll(spec, pageable).map(ReadFollowUpDTO::new);
     }

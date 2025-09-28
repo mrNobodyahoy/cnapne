@@ -10,6 +10,4 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID>, JpaSpecificationExecutor<Service> {
-    // A interface fica limpa. Os métodos antigos de busca por lista não são mais
-    // necessários.
 }

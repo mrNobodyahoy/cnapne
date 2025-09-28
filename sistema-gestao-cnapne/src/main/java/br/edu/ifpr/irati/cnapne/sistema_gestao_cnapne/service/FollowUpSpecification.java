@@ -6,8 +6,20 @@ import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.FollowUp;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
+import jakarta.persistence.criteria.Join;
 
 public class FollowUpSpecification {
+
+    public static Specification<FollowUp> studentNameContains(String studentName) {
+        return (root, query, cb) -> {
+            if (studentName == null || studentName.trim().isEmpty()) {
+                return cb.conjunction();
+            }
+            Join<FollowUp, Student> studentJoin = root.join("student");
+            return cb.like(cb.lower(studentJoin.get("completeName")), studentName.toLowerCase() + "%");
+        };
+    }
 
     public static Specification<FollowUp> hasStudent(UUID studentId) {
         return (root, query, cb) -> studentId == null ? cb.conjunction()
@@ -20,8 +32,12 @@ public class FollowUpSpecification {
     }
 
     public static Specification<FollowUp> hasStatus(String status) {
-        return (root, query, cb) -> (status == null || status.trim().isEmpty()) ? cb.conjunction()
-                : cb.equal(root.get("status"), status);
+        return (root, query, cb) -> {
+            if (status == null || status.trim().isEmpty()) {
+                return cb.conjunction();
+            }
+            return cb.equal(root.get("status"), status);
+        };
     }
 
     public static Specification<FollowUp> sessionDateIsBetween(LocalDate startDate, LocalDate endDate) {

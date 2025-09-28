@@ -1,15 +1,14 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.CreateServiceDTO;
@@ -51,7 +50,7 @@ public class AtendimentoService {
         newService.setSessionDate(createDto.getSessionDate());
         newService.setSessionTime(createDto.getSessionTime());
         newService.setSessionLocation(createDto.getSessionLocation());
-        newService.setStatus(createDto.getStatus());
+        newService.setStatus("AGENDADO");
         newService.setTypeService(createDto.getTypeService());
         newService.setDescriptionService(createDto.getDescriptionService());
         newService.setTasks(createDto.getTasks());
@@ -143,13 +142,9 @@ public class AtendimentoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ReadServiceDTO> findAllPaginated(UUID studentId, UUID professionalId, String status,
-            LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Specification<Service> spec = Specification
-                .where(ServiceSpecification.hasStudent(studentId))
-                .and(ServiceSpecification.hasProfessional(professionalId))
-                .and(ServiceSpecification.hasStatus(status))
-                .and(ServiceSpecification.sessionDateIsBetween(startDate, endDate));
+    public Page<ReadServiceDTO> findAllPaginated(String studentName, String status, Pageable pageable) {
+        Specification<Service> spec = ServiceSpecification.studentNameContains(studentName)
+                .and(ServiceSpecification.hasStatus(status));
 
         return serviceRepository.findAll(spec, pageable).map(ReadServiceDTO::new);
     }

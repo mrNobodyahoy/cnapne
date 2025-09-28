@@ -1,12 +1,10 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.controller;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -64,16 +62,12 @@ public class ServiceController {
 
     @GetMapping
     public ResponseEntity<Page<ReadServiceDTO>> listarAtendimentos(
-            @RequestParam(required = false) UUID studentId,
-            @RequestParam(required = false) UUID professionalId,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
-            @PageableDefault(size = 10, sort = "sessionDate") Pageable pageable) {
+            @RequestParam(value = "studentName", required = false) String studentName,
+            @RequestParam(value = "status", required = false) String status,
+            Pageable pageable) {
 
-        Page<ReadServiceDTO> atendimentos = atendimentoService.findAllPaginated(studentId, professionalId, status,
-                startDate, endDate, pageable);
-        return ResponseEntity.ok(atendimentos);
+        Page<ReadServiceDTO> page = atendimentoService.findAllPaginated(studentName, status, pageable);
+        return ResponseEntity.ok(page);
     }
 
 }
