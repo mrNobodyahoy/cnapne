@@ -1,5 +1,6 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.ApiErrorDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.TimelineItemDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.UpdateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.StudentService;
@@ -83,7 +85,7 @@ public class StudentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         studentService.deleteStudent(id);
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
@@ -91,6 +93,13 @@ public class StudentController {
         UUID studentId = userDetails.getId();
         ReadStudentDTO studentDTO = studentService.getStudentById(studentId);
         return ResponseEntity.ok(studentDTO);
+    }
+
+    @GetMapping("/{id}/timeline")
+    @Operation(summary = "Buscar linha do tempo do estudante", description = "Retorna uma lista unificada e ordenada de todos os atendimentos e acompanhamentos de um estudante específico.")
+    public ResponseEntity<List<TimelineItemDTO>> getStudentTimeline(@PathVariable UUID id) {
+        List<TimelineItemDTO> timeline = studentService.getStudentTimeline(id);
+        return ResponseEntity.ok(timeline);
     }
 
 }

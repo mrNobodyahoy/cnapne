@@ -48,9 +48,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/*/documents/**").permitAll()
 
                         // Estudantes
-                        .requestMatchers(HttpMethod.POST, "/api/v1/students").hasRole("COORDENACAO_CNAPNE")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/students")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
                         .requestMatchers(HttpMethod.GET, "/api/v1/students/**")
-                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "ESTUDANTE", "EQUIPE_ACOMPANHAMENTO")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/students/**").hasRole("COORDENACAO_CNAPNE")
 
@@ -78,6 +79,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/acompanhamentos/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
+                        // DASHBOArD
+                        .requestMatchers("/api/v1/dashboard/**")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO", "ESTUDANTE")
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

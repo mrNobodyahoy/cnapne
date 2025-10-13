@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimen
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.ReadServiceDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.ServiceResponseDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.UpdateServiceDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.AtendimentoService;
 import jakarta.validation.Valid;
 
@@ -64,9 +66,10 @@ public class ServiceController {
     public ResponseEntity<Page<ReadServiceDTO>> listarAtendimentos(
             @RequestParam(value = "studentName", required = false) String studentName,
             @RequestParam(value = "status", required = false) String status,
-            Pageable pageable) {
+            Pageable pageable,
+            @AuthenticationPrincipal User user) {
 
-        Page<ReadServiceDTO> page = atendimentoService.findAllPaginated(studentName, status, pageable);
+        Page<ReadServiceDTO> page = atendimentoService.findAllPaginated(studentName, status, pageable, user);
         return ResponseEntity.ok(page);
     }
 

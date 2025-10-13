@@ -22,8 +22,6 @@ public class UpdateServiceDTO {
     @NotBlank(message = "O local da Sessão é obrigatório")
     private String sessionLocation;
 
-    // Removido: private String periodicity;
-
     @NotBlank(message = "O status da Sessão é obrigatório")
     private String status;
 
@@ -33,7 +31,6 @@ public class UpdateServiceDTO {
     @NotBlank(message = "A descrição do Atendimento é obrigatória")
     private String descriptionService;
 
-    // Campos Adicionados
     private String objectives;
 
     private String results;

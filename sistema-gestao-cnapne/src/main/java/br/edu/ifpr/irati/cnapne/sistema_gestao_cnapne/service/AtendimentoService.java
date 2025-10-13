@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
@@ -19,10 +22,13 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStude
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.exception.ResourceNotFoundException;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ProfessionalRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ServiceRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.StudentRepository;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 import jakarta.validation.Valid;
 
 @org.springframework.stereotype.Service
@@ -34,6 +40,8 @@ public class AtendimentoService {
     private StudentRepository studentRepository;
     @Autowired
     private ProfessionalRepository professionalRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public ServiceResponseDTO create(CreateServiceDTO createDto) {
@@ -75,7 +83,6 @@ public class AtendimentoService {
         responseDTO.setDescriptionService(savedService.getDescriptionService());
         responseDTO.setTasks(savedService.getTasks());
 
-        // ADICIONADO: Mapeamento dos novos campos na resposta
         responseDTO.setObjectives(savedService.getObjectives());
 
         ReadStudentSummaryDTO studentDto = new ReadStudentSummaryDTO(
@@ -98,6 +105,14 @@ public class AtendimentoService {
     public ReadServiceDTO getServiceById(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Atendimento não encontrado com ID: " + id));
+
+        User authenticatedUser = getAuthenticatedUser(); // Usa o novo método
+        if (authenticatedUser.getProfile().getName() == Role.ESTUDANTE) {
+            if (!service.getStudent().getId().equals(authenticatedUser.getId())) {
+                throw new AccessDeniedException("Acesso negado.");
+            }
+        }
+
         return new ReadServiceDTO(service);
     }
 
@@ -106,13 +121,20 @@ public class AtendimentoService {
         Service existingService = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Atendimento não encontrado com ID: " + id));
 
+        User authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser.getProfile().getName() == Role.ESTUDANTE) {
+            if (!existingService.getStudent().getId().equals(authenticatedUser.getId())) {
+                throw new AccessDeniedException("Acesso negado.");
+            }
+        }
+
         Student student = studentRepository.findById(updateDto.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Estudante não encontrado com ID: " + updateDto.getStudentId()));
 
         List<Professional> newProfessionals = professionalRepository.findAllById(updateDto.getProfessionalIds());
         if (newProfessionals.size() != updateDto.getProfessionalIds().size()) {
-            throw new ResourceNotFoundException("Um ou mais profissionais não encontrados com os IDs fornecidos.");
+            throw new ResourceNotFoundException("Um ou mais profissionais não encontrados.");
         }
 
         existingService.setSessionDate(updateDto.getSessionDate());
@@ -121,45 +143,57 @@ public class AtendimentoService {
         existingService.setStatus(updateDto.getStatus());
         existingService.setTypeService(updateDto.getTypeService());
         existingService.setDescriptionService(updateDto.getDescriptionService());
-        existingService.setTasks(updateDto.getTasks());
-        existingService.setObjectives(updateDto.getObjectives());
-        existingService.setResults(updateDto.getResults());
         existingService.setStudent(student);
 
-        for (Professional prof : existingService.getProfessionals()) {
-            prof.getServices().remove(existingService);
-        }
+        existingService.setObjectives(updateDto.getObjectives());
+        existingService.setResults(updateDto.getResults());
+        existingService.setTasks(updateDto.getTasks());
+        // -----------------------------------------
+
+        existingService.getProfessionals().forEach(prof -> prof.getServices().remove(existingService));
         existingService.getProfessionals().clear();
 
-        for (Professional prof : newProfessionals) {
+        newProfessionals.forEach(prof -> {
             prof.getServices().add(existingService);
             existingService.getProfessionals().add(prof);
-        }
+        });
 
         Service updatedService = serviceRepository.save(existingService);
-
         return new ReadServiceDTO(updatedService);
     }
 
     @Transactional(readOnly = true)
-    public Page<ReadServiceDTO> findAllPaginated(String studentName, String status, Pageable pageable) {
+    public Page<ReadServiceDTO> findAllPaginated(String studentName, String status, Pageable pageable,
+            User authenticatedUser) {
         Specification<Service> spec = ServiceSpecification.studentNameContains(studentName)
                 .and(ServiceSpecification.hasStatus(status));
+
+        if (authenticatedUser.getProfile().getName() != Role.COORDENACAO_CNAPNE) {
+            spec = spec.and(ServiceSpecification.hasProfessional(authenticatedUser.getId()));
+        }
 
         return serviceRepository.findAll(spec, pageable).map(ReadServiceDTO::new);
     }
 
     @Transactional
     public void delete(UUID id) {
-
         Service existingService = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Atendimento não encontrado com ID: " + id));
 
-        for (Professional prof : existingService.getProfessionals()) {
-            prof.getServices().remove(existingService);
-        }
+        User authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser.getProfile().getName() == Role.ESTUDANTE) {
+            if (!existingService.getStudent().getId().equals(authenticatedUser.getId())) {
+                throw new AccessDeniedException("Acesso negado.");
+            }
 
-        serviceRepository.delete(existingService);
+        }
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName(); // Pega o email do token
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + userEmail));
     }
 
 }

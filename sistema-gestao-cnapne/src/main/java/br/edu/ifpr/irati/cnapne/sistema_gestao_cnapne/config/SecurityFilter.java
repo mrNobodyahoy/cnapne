@@ -17,9 +17,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/*
- validar o token JWT.
- */
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
 
@@ -52,11 +49,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    /*
-     * Extrai o token JWT do cabeçalho.
-     */
     private String recoverToken(HttpServletRequest request) {
-        // 1) primeiro tenta Authorization header
         var authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.substring(7);

@@ -22,8 +22,6 @@ public class UpdateFollowUpDTO {
     @NotBlank(message = "O local da Sessão é obrigatório")
     private String sessionLocation;
 
-    // Removido: private String periodicity;
-
     @NotBlank(message = "O status da Sessão é obrigatório")
     private String status;
 
@@ -33,7 +31,6 @@ public class UpdateFollowUpDTO {
     @NotBlank(message = "A descrição do Acompanhamento é obrigatória")
     private String description;
 
-    // Campos Adicionados
     private String areasCovered;
     private String nextSteps;
 

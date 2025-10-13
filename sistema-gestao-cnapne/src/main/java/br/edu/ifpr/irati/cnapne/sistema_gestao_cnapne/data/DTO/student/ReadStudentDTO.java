@@ -2,7 +2,7 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID; // <<< MUDANÇA AQUI
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.responsible.ResponsibleDTO; // <<< MUDANÇA AQUI

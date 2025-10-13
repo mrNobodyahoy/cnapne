@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.FollowUpResponseDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.ReadFollowUpDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.UpdateFollowUpDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.FollowUpService;
 import jakarta.validation.Valid;
 
@@ -63,9 +65,12 @@ public class FollowUpController {
     public ResponseEntity<Page<ReadFollowUpDTO>> listarAcompanhamentos(
             @RequestParam(value = "studentName", required = false) String studentName,
             @RequestParam(value = "status", required = false) String status,
-            Pageable pageable) {
+            @RequestParam(value = "professionalId", required = false) UUID professionalId,
+            Pageable pageable,
+            @AuthenticationPrincipal User userDetails) {
 
-        Page<ReadFollowUpDTO> page = followUpService.findAllPaginated(studentName, status, pageable);
+        Page<ReadFollowUpDTO> page = followUpService.findAllPaginated(
+                studentName, status, professionalId, pageable, userDetails);
         return ResponseEntity.ok(page);
     }
 }

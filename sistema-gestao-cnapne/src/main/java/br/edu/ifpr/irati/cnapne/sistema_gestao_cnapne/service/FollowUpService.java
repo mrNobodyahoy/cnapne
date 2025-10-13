@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +23,13 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStude
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.FollowUp;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.exception.ResourceNotFoundException;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.FollowUpRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ProfessionalRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.StudentRepository;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 import jakarta.validation.Valid;
 
 @Service
@@ -34,6 +40,8 @@ public class FollowUpService {
     private StudentRepository studentRepository;
     @Autowired
     private ProfessionalRepository professionalRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Transactional
     public FollowUpResponseDTO create(CreateFollowUpDTO createDto) {
@@ -92,11 +100,17 @@ public class FollowUpService {
         return responseDTO;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ReadFollowUpDTO getFollowUpById(UUID id) {
         FollowUp followUp = followUpRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Acompanhamento não encontrado com ID: " + id));
 
+        User authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser.getProfile().getName() == Role.ESTUDANTE) {
+            if (!followUp.getStudent().getId().equals(authenticatedUser.getId())) {
+                throw new AccessDeniedException("Acesso negado.");
+            }
+        }
         return new ReadFollowUpDTO(followUp);
     }
 
@@ -104,6 +118,13 @@ public class FollowUpService {
     public ReadFollowUpDTO update(UUID id, @Valid UpdateFollowUpDTO updateDto) {
         FollowUp existingFollowUp = followUpRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Acompanhamento não encontrado com ID: " + id));
+
+        User authenticatedUser = getAuthenticatedUser();
+        if (authenticatedUser.getProfile().getName() == Role.ESTUDANTE) {
+            if (!existingFollowUp.getStudent().getId().equals(authenticatedUser.getId())) {
+                throw new AccessDeniedException("Acesso negado.");
+            }
+        }
 
         Student student = studentRepository.findById(updateDto.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -153,10 +174,25 @@ public class FollowUpService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ReadFollowUpDTO> findAllPaginated(String studentName, String status, Pageable pageable) {
+    public Page<ReadFollowUpDTO> findAllPaginated(String studentName, String status, UUID professionalId,
+            Pageable pageable, User authenticatedUser) {
         Specification<FollowUp> spec = FollowUpSpecification.studentNameContains(studentName)
                 .and(FollowUpSpecification.hasStatus(status));
+        if (authenticatedUser.getProfile().getName() == Role.COORDENACAO_CNAPNE) {
+            if (professionalId != null) {
+                spec = spec.and(FollowUpSpecification.hasProfessional(professionalId));
+            }
+        } else {
+            spec = spec.and(FollowUpSpecification.hasProfessional(authenticatedUser.getId()));
+        }
 
         return followUpRepository.findAll(spec, pageable).map(ReadFollowUpDTO::new);
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + userEmail));
     }
 }

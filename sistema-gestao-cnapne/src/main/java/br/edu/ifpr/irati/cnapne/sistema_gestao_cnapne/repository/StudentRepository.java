@@ -27,4 +27,6 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
                         String name, String registration, Pageable pageable);
 
         Page<Student> findByStatus(String status, Pageable pageable);
+
+        long countByStatus(String status);
 }

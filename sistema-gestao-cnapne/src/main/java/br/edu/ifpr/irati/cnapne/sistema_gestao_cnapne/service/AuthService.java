@@ -1,8 +1,5 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
-import java.time.LocalDate;
-import java.time.Period;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthRequestDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthResponseDTO;
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 
@@ -41,20 +37,6 @@ public class AuthService {
             if (!user.isActive()) {
                 throw new AuthenticationException("Este usuário está desativado no sistema.") {
                 };
-            }
-            if (user.getProfile().getName() == Role.ESTUDANTE) {
-                Student student = (Student) user;
-
-                LocalDate dataNascimento = student.getBirthDate();
-
-                if (dataNascimento != null) {
-
-                    int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
-                    if (idade < 18) {
-                        throw new AuthenticationException("Acesso restrito para menores de 18 anos.") {
-                        };
-                    }
-                }
             }
 
             String token = jwtService.generateToken(user);

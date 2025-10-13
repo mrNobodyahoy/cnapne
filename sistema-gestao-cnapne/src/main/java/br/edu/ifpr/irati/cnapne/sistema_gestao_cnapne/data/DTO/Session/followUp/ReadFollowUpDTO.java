@@ -43,8 +43,8 @@ public class ReadFollowUpDTO {
         this.status = followUp.getStatus();
         this.description = followUp.getDescription();
         this.tasks = followUp.getTasks();
-        this.areasCovered = followUp.getAreasCovered(); // Adicionado
-        this.nextSteps = followUp.getNextSteps(); // Adicionado
+        this.areasCovered = followUp.getAreasCovered();
+        this.nextSteps = followUp.getNextSteps();
 
         if (followUp.getStudent() != null) {
             this.student = new ReadStudentSummaryDTO(

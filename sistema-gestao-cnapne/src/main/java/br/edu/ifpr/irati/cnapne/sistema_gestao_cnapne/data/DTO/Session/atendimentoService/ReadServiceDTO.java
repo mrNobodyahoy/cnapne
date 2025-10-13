@@ -45,8 +45,8 @@ public class ReadServiceDTO {
         this.typeService = service.getTypeService();
         this.descriptionService = service.getDescriptionService();
         this.tasks = service.getTasks();
-        this.objectives = service.getObjectives(); // Adicionado
-        this.results = service.getResults(); // Adicionado
+        this.objectives = service.getObjectives();
+        this.results = service.getResults();
 
         if (service.getStudent() != null) {
             this.student = new ReadStudentSummaryDTO(

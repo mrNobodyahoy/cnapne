@@ -3,8 +3,13 @@ package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,13 +19,17 @@ import org.springframework.transaction.annotation.Transactional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.CreateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.TimelineItemDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.UpdateStudentDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Profile;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Responsible;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.exception.DataIntegrityViolationException;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.exception.ResourceNotFoundException;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.FollowUpRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ProfileRepository;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.ServiceRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.StudentRepository;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -29,6 +38,11 @@ import jakarta.validation.Valid;
 public class StudentService {
 
     private final UserRepository userRepository;
+
+    @Autowired
+    private ServiceRepository serviceRepository;
+    @Autowired
+    private FollowUpRepository followUpRepository;
 
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
@@ -156,4 +170,24 @@ public class StudentService {
                 s.getStatus()));
     }
 
+    @Transactional(readOnly = true)
+    public List<TimelineItemDTO> getStudentTimeline(UUID studentId) {
+        if (!studentRepository.existsById(studentId)) {
+            throw new ResourceNotFoundException("Estudante não encontrado com ID: " + studentId);
+        }
+
+        List<TimelineItemDTO> services = serviceRepository.findAll(ServiceSpecification.hasStudent(studentId))
+                .stream()
+                .map(TimelineItemDTO::new)
+                .collect(Collectors.toList());
+
+        List<TimelineItemDTO> followUps = followUpRepository.findAll(FollowUpSpecification.hasStudent(studentId))
+                .stream()
+                .map(TimelineItemDTO::new)
+                .collect(Collectors.toList());
+
+        return Stream.concat(services.stream(), followUps.stream())
+                .sorted(Comparator.comparing(TimelineItemDTO::getDate).reversed())
+                .collect(Collectors.toList());
+    }
 }

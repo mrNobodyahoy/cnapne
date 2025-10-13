@@ -1,4 +1,4 @@
-package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service; // Pode colocar no pacote que preferir
+package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -53,5 +53,27 @@ public class ServiceSpecification {
             }
             return cb.lessThanOrEqualTo(root.get("sessionDate"), endDate);
         };
+    }
+
+    public static Specification<Service> sessionDateIsIn(LocalDate startDate, LocalDate endDate) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+
+            if (startDate != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("sessionDate"), startDate));
+            }
+
+            if (endDate != null) {
+                predicates.add(cb.lessThan(root.get("sessionDate"), endDate));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+    }
+
+    public static Specification<Service> byProfessionalAndDate(UUID professionalId, LocalDate startDate,
+            LocalDate endDate) {
+        return Specification.where(hasProfessional(professionalId))
+                .and(sessionDateIsIn(startDate, endDate));
     }
 }

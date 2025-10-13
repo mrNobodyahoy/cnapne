@@ -51,4 +51,26 @@ public class FollowUpSpecification {
             return cb.lessThanOrEqualTo(root.get("sessionDate"), endDate);
         };
     }
+
+    public static Specification<FollowUp> sessionDateIsIn(LocalDate startDate, LocalDate endDate) {
+        return (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+
+            if (startDate != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("sessionDate"), startDate));
+            }
+
+            if (endDate != null) {
+                predicates.add(cb.lessThan(root.get("sessionDate"), endDate));
+            }
+
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+    }
+
+    public static Specification<FollowUp> byProfessionalAndDate(UUID professionalId, LocalDate startDate,
+            LocalDate endDate) {
+        return Specification.where(hasProfessional(professionalId))
+                .and(sessionDateIsIn(startDate, endDate));
+    }
 }
