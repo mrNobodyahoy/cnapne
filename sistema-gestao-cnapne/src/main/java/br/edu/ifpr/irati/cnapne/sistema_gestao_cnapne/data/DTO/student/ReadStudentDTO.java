@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.responsible.ResponsibleDTO; // <<< MUDANÇA AQUI
-import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student; // <<< MUDANÇA AQUI
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.responsible.ResponsibleDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
 
 public record ReadStudentDTO(
         UUID id,

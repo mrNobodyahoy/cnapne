@@ -1,6 +1,10 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -19,6 +23,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimen
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.ServiceResponseDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.atendimentoService.UpdateServiceDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.user.EmailDto;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
@@ -42,12 +47,18 @@ public class AtendimentoService {
     private ProfessionalRepository professionalRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private EmailPublisherService emailPublisherService;
 
     @Transactional
     public ServiceResponseDTO create(CreateServiceDTO createDto) {
         Student student = studentRepository.findById(createDto.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Estudante não encontrado com ID: " + createDto.getStudentId()));
+
+        if (createDto.getSessionDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("A data do atendimento não pode ser anterior à data de hoje.");
+        }
 
         List<Professional> professionals = professionalRepository.findAllById(createDto.getProfessionalIds());
         if (professionals.size() != createDto.getProfessionalIds().size()) {
@@ -97,6 +108,7 @@ public class AtendimentoService {
                 .map(ReadProfessionalDTO::new)
                 .collect(Collectors.toList());
         responseDTO.setProfessionals(professionalDTOs);
+        sendServiceNotificationEmail(savedService, "agendado");
 
         return responseDTO;
     }
@@ -148,7 +160,6 @@ public class AtendimentoService {
         existingService.setObjectives(updateDto.getObjectives());
         existingService.setResults(updateDto.getResults());
         existingService.setTasks(updateDto.getTasks());
-        // -----------------------------------------
 
         existingService.getProfessionals().forEach(prof -> prof.getServices().remove(existingService));
         existingService.getProfessionals().clear();
@@ -159,6 +170,15 @@ public class AtendimentoService {
         });
 
         Service updatedService = serviceRepository.save(existingService);
+
+        String actionType = "atualizado";
+        if ("REALIZADO".equalsIgnoreCase(updatedService.getStatus())) {
+            actionType = "marcado como realizado";
+        } else if ("CANCELADO".equalsIgnoreCase(updatedService.getStatus())) {
+            actionType = "cancelado";
+        }
+
+        sendServiceNotificationEmail(updatedService, actionType);
         return new ReadServiceDTO(updatedService);
     }
 
@@ -191,9 +211,34 @@ public class AtendimentoService {
 
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName(); // Pega o email do token
+        String userEmail = authentication.getName();
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + userEmail));
     }
 
+    private void sendServiceNotificationEmail(Service service, String actionType) {
+        Student student = service.getStudent();
+        List<Professional> professionals = service.getProfessionals();
+        String templatePath = "email/notificacao-atendimento";
+        String subject = "Atendimento " + actionType + ": " + student.getName();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        Map<String, Object> emailProps = new HashMap<>();
+        emailProps.put("studentName", student.getName());
+        emailProps.put("actionType", actionType);
+        emailProps.put("sessionDate", service.getSessionDate().format(dateFormatter)); // Formata a data
+        emailProps.put("sessionTime", service.getSessionTime().toString().substring(0, 5)); // Formata a hora para HH:mm
+        emailProps.put("sessionLocation", service.getSessionLocation());
+        emailProps.put("sessionStatus", service.getStatus()); // Adiciona o status
+
+        emailProps.put("recipientName", student.getName());
+        EmailDto studentEmail = new EmailDto(student.getEmail(), subject, templatePath, new HashMap<>(emailProps));
+        emailPublisherService.scheduleEmail(studentEmail);
+
+        for (Professional prof : professionals) {
+            emailProps.put("recipientName", prof.getName());
+            EmailDto profEmail = new EmailDto(prof.getEmail(), subject, templatePath, new HashMap<>(emailProps));
+            emailPublisherService.scheduleEmail(profEmail);
+        }
+    }
 }

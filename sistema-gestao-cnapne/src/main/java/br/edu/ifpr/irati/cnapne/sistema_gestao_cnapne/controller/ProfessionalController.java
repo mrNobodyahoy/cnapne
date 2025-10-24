@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.CreateProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.UpdateProfessionalDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.user.ChangePasswordDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.ProfessionalService;
@@ -74,6 +75,14 @@ public class ProfessionalController {
             @Valid @RequestBody UpdateProfessionalDTO dto) {
         ReadProfessionalDTO updated = professionalService.updateProfessional(id, dto);
         return ResponseEntity.ok(updated);
+    }
+
+    @PutMapping("/me/change-password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal User userDetails,
+            @Valid @RequestBody ChangePasswordDTO dto) {
+        professionalService.changePassword(userDetails.getId(), dto);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

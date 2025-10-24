@@ -41,4 +41,8 @@ public class Professional extends User {
     @JoinTable(name = "professional_followups", joinColumns = @JoinColumn(name = "professional_id"), inverseJoinColumns = @JoinColumn(name = "followup_id"))
     private List<FollowUp> followUps = new ArrayList<>();
 
+    @Override
+    public String getName() {
+        return this.fullName;
+    }
 }

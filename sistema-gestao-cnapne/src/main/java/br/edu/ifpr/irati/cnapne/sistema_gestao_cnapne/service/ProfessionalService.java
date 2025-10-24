@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.CreateProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.UpdateProfessionalDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.user.ChangePasswordDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Profile;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.enums.Role;
@@ -103,6 +105,19 @@ public class ProfessionalService {
 
         Professional updatedProfessional = professionalRepository.save(professional);
         return new ReadProfessionalDTO(updatedProfessional);
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordDTO dto) {
+        Professional professional = professionalRepository.findById(userId)
+                .orElseThrow(() -> new DataNotFoundException("Profissional não encontrado."));
+
+        if (!passwordEncoder.matches(dto.currentPassword(), professional.getPassword())) {
+            throw new BadCredentialsException("A senha atual está incorreta.");
+        }
+
+        professional.setPassword(passwordEncoder.encode(dto.newPassword()));
+        professionalRepository.save(professional);
     }
 
     @Transactional

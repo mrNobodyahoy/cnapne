@@ -94,8 +94,8 @@ public class DashboardService {
                         return monthlyDataList;
                 }
 
-                YearMonth startMonth = YearMonth.from(overallStartDate);
                 YearMonth currentMonth = YearMonth.now();
+                YearMonth startMonth = currentMonth.minusMonths(5);
                 Locale ptBr = new Locale("pt", "BR");
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM/yyyy", ptBr);
 

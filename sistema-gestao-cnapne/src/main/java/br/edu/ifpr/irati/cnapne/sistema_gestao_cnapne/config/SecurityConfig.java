@@ -39,6 +39,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/logout").permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
+                        .requestMatchers("/api/v1/auth/recuperacao-senha").permitAll()
+                        .requestMatchers("/api/v1/auth/resetar-senha-final").permitAll()
                         .requestMatchers("/api/v1/students/me").hasRole("ESTUDANTE")
 
                         // Documentos
@@ -58,6 +60,11 @@ public class SecurityConfig {
                         // Profissionais
                         .requestMatchers("/api/v1/professionals/me")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/me")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/me/change-password")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
                         .requestMatchers(HttpMethod.GET, "/api/v1/professionals/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
@@ -66,7 +73,7 @@ public class SecurityConfig {
                         .hasRole("COORDENACAO_CNAPNE")
 
                         .requestMatchers(HttpMethod.PUT, "/api/v1/professionals/**")
-                        .hasRole("COORDENACAO_CNAPNE")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/professionals/**")
                         .hasRole("COORDENACAO_CNAPNE")

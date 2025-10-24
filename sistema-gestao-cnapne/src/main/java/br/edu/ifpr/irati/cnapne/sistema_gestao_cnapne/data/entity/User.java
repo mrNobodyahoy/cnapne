@@ -1,5 +1,6 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +34,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "app_users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class User implements UserDetails {
+public abstract class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -55,6 +56,14 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "perfil_id", nullable = false)
     private Profile profile;
+
+    @Column(name = "recovery_token")
+    private String recoveryToken;
+
+    @Column(name = "recovery_token_expiry")
+    private LocalDateTime recoveryTokenExpiry;
+
+    public abstract String getName();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -94,4 +103,5 @@ public class User implements UserDetails {
     public String getUsername() {
         return this.email;
     }
+
 }

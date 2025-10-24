@@ -6,19 +6,15 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_MAIL_HOST: mailhog
-      SPRING_MAIL_PORT: 1025
-
+    environment: 
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
     volumes:
       - ./uploads:/app/uploads
-
     depends_on:
       db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     networks:
       - cnapne_network
 
@@ -36,7 +32,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      # Comando que verifica se o banco está pronto para aceitar conexões
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
@@ -44,7 +39,6 @@ services:
     networks:
       - cnapne_network
 
-  # 3. Serviço do pgAdmin (Interface Gráfica para o Banco)
   pgadmin:
     image: dpage/pgadmin4
     container_name: cnapne_pgadmin
@@ -61,21 +55,21 @@ services:
     networks:
       - cnapne_network
 
-  # 4. Serviço do MailHog (Servidor de E-mail para Testes)
-  mailhog:
-    image: mailhog/mailhog
-    container_name: cnapne_mailhog
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: cnapne_rabbitmq
     ports:
-      - "1025:1025" # Porta SMTP para a aplicação se conectar
-      - "8025:8025" # Porta para acessar a interface web do MailHog
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     networks:
       - cnapne_network
 
-# Define os volumes para persistência de dados
 volumes:
   postgres_data:
 
-# Define a rede customizada para os serviços se comunicarem
 networks:
   cnapne_network:
     driver: bridge

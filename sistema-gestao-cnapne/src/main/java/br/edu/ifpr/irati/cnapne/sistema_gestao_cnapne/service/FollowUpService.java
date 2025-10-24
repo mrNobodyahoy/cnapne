@@ -1,6 +1,10 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -20,6 +24,7 @@ import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.ReadFollowUpDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.followUp.UpdateFollowUpDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.user.EmailDto;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.FollowUp;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Professional;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Student;
@@ -42,12 +47,18 @@ public class FollowUpService {
     private ProfessionalRepository professionalRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private EmailPublisherService emailPublisherService;
 
     @Transactional
     public FollowUpResponseDTO create(CreateFollowUpDTO createDto) {
         Student student = studentRepository.findById(createDto.getStudentId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Estudante não encontrado com ID: " + createDto.getStudentId()));
+
+        if (createDto.getSessionDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("A data do acompanhamento não pode ser anterior à data de hoje.");
+        }
 
         List<Professional> professionals = professionalRepository.findAllById(createDto.getProfessionalIds());
         if (professionals.size() != createDto.getProfessionalIds().size()) {
@@ -96,6 +107,7 @@ public class FollowUpService {
                 .map(ReadProfessionalDTO::new)
                 .collect(Collectors.toList());
         responseDTO.setProfessionals(professionalDTOs);
+        sendFollowUpNotificationEmail(savedFollowUp, "agendado");
 
         return responseDTO;
     }
@@ -155,7 +167,15 @@ public class FollowUpService {
             prof.getFollowUps().add(existingFollowUp);
             existingFollowUp.getProfessionals().add(prof);
         }
+
         FollowUp updatedFollowUp = followUpRepository.save(existingFollowUp);
+        String actionType = "atualizado";
+        if ("REALIZADO".equalsIgnoreCase(updatedFollowUp.getStatus())) {
+            actionType = "marcado como realizado";
+        } else if ("CANCELADO".equalsIgnoreCase(updatedFollowUp.getStatus())) {
+            actionType = "cancelado";
+        }
+        sendFollowUpNotificationEmail(updatedFollowUp, actionType);
 
         return new ReadFollowUpDTO(updatedFollowUp);
     }
@@ -194,5 +214,34 @@ public class FollowUpService {
         String userEmail = authentication.getName();
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email: " + userEmail));
+    }
+
+    private void sendFollowUpNotificationEmail(FollowUp followUp, String actionType) {
+
+        Student student = followUp.getStudent();
+        List<Professional> professionals = followUp.getProfessionals();
+        String templatePath = "email/notificacao-acompanhamento";
+        String subject = "Acompanhamento " + actionType + ": " + student.getName();
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        // 1. Notificar o Estudante
+        Map<String, Object> emailProps = new HashMap<>();
+        emailProps.put("studentName", student.getName());
+        emailProps.put("actionType", actionType);
+        emailProps.put("sessionDate", followUp.getSessionDate().format(dateFormatter)); // Formata a data
+        emailProps.put("sessionTime", followUp.getSessionTime().toString().substring(0, 5)); // Formata a hora para
+                                                                                             // HH:mm
+        emailProps.put("sessionLocation", followUp.getSessionLocation());
+        emailProps.put("sessionStatus", followUp.getStatus()); // Adiciona o status
+        emailProps.put("recipientName", student.getName());
+        EmailDto studentEmail = new EmailDto(student.getEmail(), subject, templatePath, new HashMap<>(emailProps));
+        emailPublisherService.scheduleEmail(studentEmail);
+
+        // 2. Notificar cada Profissional
+        for (Professional prof : professionals) {
+            emailProps.put("recipientName", prof.getName());
+            EmailDto profEmail = new EmailDto(prof.getEmail(), subject, templatePath, new HashMap<>(emailProps));
+            emailPublisherService.scheduleEmail(profEmail);
+        }
     }
 }

@@ -1,5 +1,7 @@
 package br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthRequestDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.AuthResponseDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.auth.LoginResponseDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.user.ResetPasswordRequestDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.User;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,5 +83,23 @@ public class AuthenticationController {
                 httpServletResponse.addHeader("Set-Cookie", jwtCookie.toString());
 
                 return ResponseEntity.noContent().build();
+        }
+
+        @PostMapping("/recuperacao-senha")
+        public ResponseEntity<String> solicitarRecuperacao(@RequestBody Map<String, String> payload) {
+                String email = payload.get("email");
+                if (email == null || email.isEmpty()) {
+                        return ResponseEntity.badRequest().body("O e-mail é obrigatório.");
+                }
+
+                authService.processarPedidoRecuperacaoSenha(email);
+
+                return ResponseEntity.ok("Se um usuário com este e-mail existir, um link de recuperação foi enviado.");
+        }
+
+        @PostMapping("/resetar-senha-final")
+        public ResponseEntity<String> resetarSenhaFinal(@RequestBody @Valid ResetPasswordRequestDTO payload) {
+                authService.resetarSenhaFinal(payload);
+                return ResponseEntity.ok("Senha redefinida com sucesso.");
         }
 }

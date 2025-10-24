@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperação de Senha - IFPR</title>
+    <style>
+        body {
+            background-color: #f7f9f8;
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #00693E;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 30px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-top: 4px solid #00693E;
+        }
+        .button {
+            display: inline-block;
+            background-color: #00693E;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #004D2C;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 25px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Instituto Federal do Paraná - Campus Irati
+    </div>
+
+    <div class="container">
+        <h2>Recuperação de Senha</h2>
+
+        <p>Olá, <b th:text="${nomeUsuario}">Nome do Usuário</b>!</p>
+
+        <p>Recebemos uma solicitação para redefinir sua senha. Se foi você, clique no botão abaixo para criar uma nova senha:</p>
+
+        <p style="text-align:center; margin: 25px 0;">
+            <a th:href="${linkRecuperacao}" class="button">Redefinir Senha</a>
+        </p>
+
+        <p>Este link é válido por 1 hora. Caso não tenha solicitado, ignore este e-mail.</p>
+
+        <hr>
+        <p class="footer">
+            IFPR - Campus Irati<br>
+            Esta é uma mensagem automática, por favor não responda.
+        </p>
+    </div>
+</body>
+</html>
