@@ -86,6 +86,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/acompanhamentos/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
 
+                        // 🎓 Orientações do Professor
+                        .requestMatchers("/api/v1/orientacoes-professor/**")
+                        .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO")
+
                         // DASHBOArD
                         .requestMatchers("/api/v1/dashboard/**")
                         .hasAnyRole("COORDENACAO_CNAPNE", "EQUIPE_AEE", "EQUIPE_ACOMPANHAMENTO", "ESTUDANTE")

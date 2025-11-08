@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Professional.ReadProfessionalDTO;
+import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.Session.teacherGuidance.ReadTeacherGuidanceDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.DTO.student.ReadStudentSummaryDTO;
 import br.edu.ifpr.irati.cnapne.sistema_gestao_cnapne.data.entity.Service;
 import lombok.Data;
@@ -22,13 +23,12 @@ public class ReadServiceDTO {
     private LocalDate sessionDate;
     private Time sessionTime;
     private String sessionLocation;
-    // Removido: private String periodicity;
+    private ReadTeacherGuidanceDTO teacherGuidance;
     private String status;
     private String typeService;
     private String descriptionService;
     private String tasks;
 
-    // Campos Adicionados
     private String objectives;
     private String results;
 
@@ -61,6 +61,9 @@ public class ReadServiceDTO {
             this.professionals = service.getProfessionals().stream()
                     .map(ReadProfessionalDTO::new)
                     .collect(Collectors.toList());
+        }
+        if (service.getTeacherGuidance() != null) {
+            this.teacherGuidance = new ReadTeacherGuidanceDTO(service.getTeacherGuidance());
         }
     }
 }
